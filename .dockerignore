@@ -1,0 +1,34 @@
+# Dependencies and build artifacts
+node_modules/
+dist/
+dist-ssr/
+
+# Environment files and credentials
+.env
+.env.*
+*.local
+secrets/
+
+# Version control
+.git/
+.gitignore
+
+# IDE and Editor configurations
+.idea/
+.vscode/
+*.iml
+*.sw?
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+
+# Operating System files
+.DS_Store
+Thumbs.db
