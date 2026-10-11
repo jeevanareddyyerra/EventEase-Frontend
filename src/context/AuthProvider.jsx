@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AuthContext } from './auth-context.js'
 import { login as loginApi } from '../api/authApi.js'
-import { setAuthHeader } from '../api/client.js'
 import {
   getToken,
   setToken,
@@ -22,13 +21,11 @@ export function AuthProvider({ children }) {
       const token = getToken()
       const storedUser = getStoredUser()
       if (token && storedUser) {
-        setAuthHeader(token)
         return storedUser
       }
       if (!token && storedUser) {
         // If token is missing but user profile is lingering, clear stale data
         clearAuthSession()
-        setAuthHeader(null)
       }
       return null
     } catch {
@@ -42,7 +39,6 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const handleSessionExpired = () => {
       clearAuthSession()
-      setAuthHeader(null)
       setUser(null)
     }
 
@@ -51,11 +47,9 @@ export function AuthProvider({ children }) {
         const token = getToken()
         const storedUser = getStoredUser()
         if (token && storedUser) {
-          setAuthHeader(token)
           setUser(storedUser)
         } else if (!token && !storedUser) {
           // Only clear state when both credentials are removed, preventing write-order desync
-          setAuthHeader(null)
           setUser(null)
         }
       }
@@ -101,9 +95,8 @@ export function AuthProvider({ children }) {
       const email = data.email ?? userObj.email ?? credentials.email
       const role = (data.role ?? userObj.role ?? 'USER').toUpperCase()
 
-      // Save token and profile to localStorage and sync API headers
+      // Save token and profile to localStorage
       setToken(token)
-      setAuthHeader(token)
       const userProfile = {
         id: userId,
         userId,
@@ -135,7 +128,6 @@ export function AuthProvider({ children }) {
    */
   const logout = useCallback(() => {
     clearAuthSession()
-    setAuthHeader(null)
     setUser(null)
   }, [])
 

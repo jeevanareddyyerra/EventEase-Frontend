@@ -29,35 +29,23 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 60000,
 })
 
-// Synchronize default common Authorization header for instant synchronous availability
-export const setAuthHeader = (token) => {
-  if (token) {
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
-  } else {
-    delete apiClient.defaults.headers.common['Authorization']
-  }
-}
-
-// Initialize default Authorization header from storage on module startup
-const initialToken = getToken()
-if (initialToken) {
-  setAuthHeader(initialToken)
-}
-
-// Request interceptor: attach stored JWT as Bearer token when available
+// Request interceptor: attach stored JWT as Bearer token on protected endpoints
 apiClient.interceptors.request.use(
   (config) => {
     const token = getToken()
-    if (token) {
+    const isAuthEndpoint = Boolean(
+      config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/signup'))
+    )
+
+    if (token && !isAuthEndpoint) {
       if (config.headers && typeof config.headers.set === 'function') {
         config.headers.set('Authorization', `Bearer ${token}`)
       } else {
         config.headers = config.headers || {}
         config.headers.Authorization = `Bearer ${token}`
-        config.headers['Authorization'] = `Bearer ${token}`
       }
     }
     return config
@@ -90,7 +78,6 @@ apiClient.interceptors.response.use(
 
     if (formattedError.status === 401 && hadAuthHeader && !isAuthEndpoint) {
       removeToken()
-      setAuthHeader(null)
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('eventease:auth:session-expired'))
       }

@@ -47,14 +47,14 @@ export default function LoginPage() {
     return null
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [isSuccessRedirecting, setIsSuccessRedirecting] = useState(false)
 
-  // Redirect immediately if already authenticated on initial arrival
+  // Redirect on initial arrival if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !isLoading && !isSuccessRedirecting) {
+    if (isAuthenticated) {
       navigate(destination, { replace: true })
     }
-  }, [isAuthenticated, isLoading, isSuccessRedirecting, navigate, destination])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -131,7 +131,6 @@ export default function LoginPage() {
         password: formData.password,
       })
 
-      setIsSuccessRedirecting(true)
       setSubmittedStatus({
         type: 'success',
         message: `Welcome back, ${authData?.name || 'User'}! Redirecting...`,
@@ -142,7 +141,6 @@ export default function LoginPage() {
         navigate(destination, { replace: true })
       }, 700)
     } catch (err) {
-      setIsSuccessRedirecting(false)
       // Map field-level backend validation errors if provided
       if (err?.validationErrors) {
         setErrors((prev) => ({

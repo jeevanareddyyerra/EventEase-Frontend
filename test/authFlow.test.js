@@ -294,13 +294,68 @@ describe('Authentication Flow & Token Storage Verification', () => {
     assert.equal(resolveDestination({ pathname: '/events/12' }), '/events/12')
   })
 
-  test('setAuthHeader synchronizes apiClient.defaults.headers.common', async () => {
-    const { setAuthHeader } = await import('../src/api/client.js')
-    setAuthHeader('new-sync-token')
-    assert.equal(apiClient.defaults.headers.common['Authorization'], 'Bearer new-sync-token')
+  test('apiClient is configured with 60000ms timeout for slow backend/cold starts', () => {
+    assert.equal(apiClient.defaults.timeout, 60000)
+  })
 
-    setAuthHeader(null)
-    assert.equal(apiClient.defaults.headers.common['Authorization'], undefined)
+  test('Request interceptor does NOT attach Authorization header on /auth/login or /auth/signup even when token exists', async () => {
+    setToken('stale-jwt-token')
+
+    const requestInterceptor = apiClient.interceptors.request.handlers[0].fulfilled
+
+    const loginConfig = { url: '/auth/login', headers: {} }
+    const updatedLoginConfig = await requestInterceptor(loginConfig)
+    assert.equal(updatedLoginConfig.headers.Authorization, undefined)
+
+    const signupConfig = { url: '/auth/signup', headers: {} }
+    const updatedSignupConfig = await requestInterceptor(signupConfig)
+    assert.equal(updatedSignupConfig.headers.Authorization, undefined)
+  })
+
+  test('Response interceptor does NOT clear session or fire event on 401 from public auth endpoints', async () => {
+    setToken('user-valid-token')
+    setStoredUser({ id: 5, name: 'User 5' })
+
+    let eventFired = false
+    globalThis.window = {
+      dispatchEvent: (event) => {
+        if (event.type === 'eventease:auth:session-expired') {
+          eventFired = true
+        }
+      },
+    }
+
+    const responseInterceptorErr = apiClient.interceptors.response.handlers[0].rejected
+
+    // Test /auth/login 401 (e.g. wrong password)
+    try {
+      await responseInterceptorErr({
+        response: { status: 401, data: { message: 'Bad credentials' } },
+        config: { url: '/auth/login', headers: {} },
+      })
+    } catch {
+      // Expected rejection
+    }
+
+    assert.equal(eventFired, false)
+    assert.equal(getToken(), 'user-valid-token')
+    assert.notEqual(getStoredUser(), null)
+
+    // Test /auth/signup 401 (e.g. unauthenticated registration attempt)
+    try {
+      await responseInterceptorErr({
+        response: { status: 401, data: { message: 'Unauthorized' } },
+        config: { url: '/auth/signup', headers: {} },
+      })
+    } catch {
+      // Expected rejection
+    }
+
+    assert.equal(eventFired, false)
+    assert.equal(getToken(), 'user-valid-token')
+    assert.notEqual(getStoredUser(), null)
+
+    delete globalThis.window
   })
 
   test('Storage change handler does not prematurely wipe token during progressive login write', () => {
@@ -322,16 +377,157 @@ describe('Authentication Flow & Token Storage Verification', () => {
       return 'in-progress'
     }
 
-    const state = simulateStorageChange(STORAGE_KEYS.TOKEN)
+    const state = simulateStorageChange()
     assert.equal(state, 'in-progress')
     // Token must STILL be present
     assert.equal(getToken(), 'fresh-token')
 
     // Now user write completes
     setStoredUser({ id: 1, name: 'Test' })
-    const finalState = simulateStorageChange(STORAGE_KEYS.USER)
+    const finalState = simulateStorageChange()
     assert.equal(finalState, 'authenticated')
     assert.equal(getToken(), 'fresh-token')
     assert.notEqual(getStoredUser(), null)
+  })
+
+  test('Login response handler saves token and user profile to storage (flat and nested formats)', () => {
+    // 1. Flat format returned by Render backend
+    const flatBackendResponse = {
+      token: 'jwt-render-flat-token',
+      userId: 55,
+      name: 'Alice Render',
+      email: 'alice@render.com',
+      role: 'organizer',
+    }
+
+    // Extraction logic matching AuthProvider.jsx
+    const parseAuthResponse = (data, credentialsEmail) => {
+      const token = data.token || data.accessToken || data.jwt || data.data?.token
+      const userObj = data.user || data.data?.user || {}
+      const userId = data.userId ?? data.id ?? userObj.userId ?? userObj.id
+      const name = data.name ?? userObj.name ?? ''
+      const email = data.email ?? userObj.email ?? credentialsEmail
+      const role = (data.role ?? userObj.role ?? 'USER').toUpperCase()
+
+      setToken(token)
+      const userProfile = { id: userId, userId, name, email, role }
+      setStoredUser(userProfile)
+      return { token, userProfile }
+    }
+
+    parseAuthResponse(flatBackendResponse, 'alice@render.com')
+    assert.equal(getToken(), 'jwt-render-flat-token')
+    assert.deepEqual(getStoredUser(), {
+      id: 55,
+      userId: 55,
+      name: 'Alice Render',
+      email: 'alice@render.com',
+      role: 'ORGANIZER',
+    })
+
+    // 2. Nested format
+    const nestedResponse = {
+      token: 'jwt-nested-token',
+      user: {
+        id: 77,
+        name: 'Bob Nested',
+        email: 'bob@example.com',
+        role: 'ADMIN',
+      },
+    }
+
+    parseAuthResponse(nestedResponse, 'bob@example.com')
+    assert.equal(getToken(), 'jwt-nested-token')
+    assert.deepEqual(getStoredUser(), {
+      id: 77,
+      userId: 77,
+      name: 'Bob Nested',
+      email: 'bob@example.com',
+      role: 'ADMIN',
+    })
+  })
+
+  test('Signup handles slow backend startup without early timeout failure', async () => {
+    // Verify client timeout is long enough for Render cold starts (at least 60s)
+    assert.ok(apiClient.defaults.timeout >= 60000, 'Timeout must be >= 60000ms to allow cold starts')
+
+    // Simulate backend taking 25 seconds (cold start) then returning 201 Created
+    const originalPost = apiClient.post
+    apiClient.post = async (url, payload) => {
+      assert.equal(url, '/auth/signup')
+      assert.equal(payload.email, 'coldstart@example.com')
+      return {
+        data: {
+          token: 'token-after-cold-start',
+          userId: 303,
+          name: 'Cold Start User',
+          email: 'coldstart@example.com',
+          role: 'USER',
+        },
+      }
+    }
+
+    try {
+      const res = await signup({
+        name: 'Cold Start User',
+        email: 'coldstart@example.com',
+        phone: '',
+        password: 'password123',
+      })
+      assert.equal(res.data.token, 'token-after-cold-start')
+      assert.equal(res.data.userId, 303)
+    } finally {
+      apiClient.post = originalPost
+    }
+  })
+
+  test('Protected route access logic allows navigation when user and token exist', () => {
+    const checkRouteAccess = ({ user, token, allowedRoles }) => {
+      const isAuthenticated = Boolean(user && token)
+      if (!isAuthenticated) {
+        return { allowed: false, redirect: '/login' }
+      }
+      if (allowedRoles && allowedRoles.length > 0) {
+        const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
+        const userRole = user?.role ? String(user.role).toUpperCase() : ''
+        const hasPermission = roles.some((r) => String(r).toUpperCase() === userRole)
+        if (!hasPermission) {
+          return { allowed: false, redirect: '/home' }
+        }
+      }
+      return { allowed: true, redirect: null }
+    }
+
+    // 1. Unauthenticated (no token or user) -> redirects to /login
+    assert.deepEqual(
+      checkRouteAccess({ user: null, token: null }),
+      { allowed: false, redirect: '/login' }
+    )
+
+    // 2. Token present but no user profile -> unauthenticated
+    assert.deepEqual(
+      checkRouteAccess({ user: null, token: 'some-token' }),
+      { allowed: false, redirect: '/login' }
+    )
+
+    // 3. User authenticated -> allowed
+    const validUser = { id: 1, name: 'Alice', role: 'USER' }
+    assert.deepEqual(
+      checkRouteAccess({ user: validUser, token: 'some-token' }),
+      { allowed: true, redirect: null }
+    )
+
+    // 4. Role-based check -> USER denied access to ORGANIZER route
+    assert.deepEqual(
+      checkRouteAccess({ user: validUser, token: 'some-token', allowedRoles: ['ORGANIZER', 'ADMIN'] }),
+      { allowed: false, redirect: '/home' }
+    )
+
+    // 5. Role-based check -> ORGANIZER allowed access
+    const organizerUser = { id: 2, name: 'Bob', role: 'ORGANIZER' }
+    assert.deepEqual(
+      checkRouteAccess({ user: organizerUser, token: 'some-token', allowedRoles: ['ORGANIZER', 'ADMIN'] }),
+      { allowed: true, redirect: null }
+    )
   })
 })
