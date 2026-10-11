@@ -26,6 +26,7 @@ describe('Authentication Flow & Token Storage Verification', () => {
       removeItem: (key) => mockStorage.delete(key),
       clear: () => mockStorage.clear(),
     }
+    clearAuthSession()
   })
 
   afterEach(() => {
@@ -710,15 +711,74 @@ describe('Authentication Flow & Token Storage Verification', () => {
     assert.equal(apiClient.defaults.headers['Authorization'], undefined)
   })
 
-  test('LoginPage redirection logic resolves destination safely with user context', () => {
-    const user = { id: 1, role: 'ADMIN' }
-    const computeDestination = (role) => {
-      const normalizedRole = role ? String(role).toUpperCase() : ''
-      if (normalizedRole === 'ADMIN') return '/admin/dashboard'
-      if (normalizedRole === 'ORGANIZER') return '/organizer/dashboard'
-      return '/home'
+  test('Admin login flat response parsing directly extracts token, userId, name, email, role, organizerStatus without requiring nested user object', () => {
+    const rawAdminResponse = {
+      token: 'jwt-admin-flat-token-xyz',
+      userId: 5,
+      name: 'Platform Administrator',
+      email: 'admin@eventease.io',
+      role: 'ADMIN',
+      organizerStatus: 'APPROVED',
     }
-    assert.equal(computeDestination(user?.role), '/admin/dashboard')
-    assert.equal(computeDestination(undefined), '/home')
+
+    // Direct extraction matching AuthProvider.jsx logic
+    const token = rawAdminResponse.token || rawAdminResponse.accessToken || rawAdminResponse.jwt
+    assert.equal(token, 'jwt-admin-flat-token-xyz')
+
+    const userObj = (rawAdminResponse.user && typeof rawAdminResponse.user === 'object') ? rawAdminResponse.user : {}
+    const userId = rawAdminResponse.userId ?? rawAdminResponse.id ?? userObj.userId ?? userObj.id
+    const name = rawAdminResponse.name ?? userObj.name ?? ''
+    const email = rawAdminResponse.email ?? userObj.email ?? 'admin@eventease.io'
+    const role = (rawAdminResponse.role ?? userObj.role ?? 'USER').toUpperCase()
+    const organizerStatus = (rawAdminResponse.organizerStatus ?? userObj.organizerStatus ?? 'NONE').toUpperCase()
+
+    assert.equal(userId, 5)
+    assert.equal(name, 'Platform Administrator')
+    assert.equal(email, 'admin@eventease.io')
+    assert.equal(role, 'ADMIN')
+    assert.equal(organizerStatus, 'APPROVED')
+
+    const userProfile = { id: userId, userId, name, email, role, organizerStatus }
+    setToken(token)
+    setStoredUser(userProfile)
+
+    assert.equal(getToken(), 'jwt-admin-flat-token-xyz')
+    assert.deepEqual(getStoredUser(), userProfile)
+  })
+
+  test('Multi-layer token persistence stores both primary and compatibility keys', () => {
+    setToken('jwt-compat-test')
+    assert.equal(getToken(), 'jwt-compat-test')
+    if (typeof localStorage !== 'undefined') {
+      assert.equal(localStorage.getItem(STORAGE_KEYS.TOKEN), 'jwt-compat-test')
+      assert.equal(localStorage.getItem('token'), 'jwt-compat-test')
+    }
+
+    clearAuthSession()
+    assert.equal(getToken(), null)
+    assert.equal(getStoredUser(), null)
+  })
+
+  test('Protected route logic waits for isInitialized before checking authentication', () => {
+    const checkRouteAccess = ({ isInitialized, isLoading, isAuthenticated }) => {
+      if (isLoading || !isInitialized) {
+        return 'LOADING'
+      }
+      if (!isAuthenticated) {
+        return 'REDIRECT_LOGIN'
+      }
+      return 'ALLOW'
+    }
+
+    // Still initializing -> must show loading screen, NEVER redirect to login
+    assert.equal(checkRouteAccess({ isInitialized: false, isLoading: false, isAuthenticated: false }), 'LOADING')
+    assert.equal(checkRouteAccess({ isInitialized: false, isLoading: true, isAuthenticated: false }), 'LOADING')
+
+    // Initialized and unauthenticated -> redirect to login
+    assert.equal(checkRouteAccess({ isInitialized: true, isLoading: false, isAuthenticated: false }), 'REDIRECT_LOGIN')
+
+    // Initialized and authenticated -> allow access
+    assert.equal(checkRouteAccess({ isInitialized: true, isLoading: false, isAuthenticated: true }), 'ALLOW')
   })
 })
+

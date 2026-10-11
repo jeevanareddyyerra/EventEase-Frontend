@@ -16,17 +16,18 @@ import { STORAGE_KEYS } from '../constants/storage.js'
  * handles JWT storage, session restoration across page reloads, and cross-tab/401 sync.
  */
 export function AuthProvider({ children }) {
-  // Restore authenticated session from localStorage synchronously on initial load
+  // Synchronous initial restore if already present in storage
   const [user, setUser] = useState(() => {
     try {
       const token = getToken()
       const storedUser = getStoredUser()
       if (token && storedUser) {
+        setAuthHeader(token)
         return storedUser
       }
       if (!token && storedUser) {
-        // If token is missing but user profile is lingering, clear stale data
         clearAuthSession()
+        setAuthHeader(null)
       }
       return null
     } catch {
@@ -35,6 +36,7 @@ export function AuthProvider({ children }) {
   })
 
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(true)
 
   // Listen for 401 session expiration from Axios interceptors and storage events from other tabs
   useEffect(() => {
@@ -45,7 +47,12 @@ export function AuthProvider({ children }) {
     }
 
     const handleStorageChange = (e) => {
-      if (e.key === STORAGE_KEYS.TOKEN || e.key === STORAGE_KEYS.USER) {
+      if (
+        e.key === STORAGE_KEYS.TOKEN ||
+        e.key === STORAGE_KEYS.USER ||
+        e.key === STORAGE_KEYS.TOKEN_COMPAT ||
+        e.key === STORAGE_KEYS.USER_COMPAT
+      ) {
         const token = getToken()
         const storedUser = getStoredUser()
         if (token && storedUser) {
@@ -84,22 +91,21 @@ export function AuthProvider({ children }) {
       const response = await loginApi(credentials)
       const data = response?.data || {}
 
-      // Defensive token extraction supporting standard backend and wrapper variations
+      // 1. Direct token extraction from response
       const token = data.token || data.accessToken || data.jwt || data.data?.token
       if (!token || typeof token !== 'string') {
         throw new Error('Authentication succeeded but no authorization token was received from the server.')
       }
 
-      // Defensive user field extraction supporting flat response and nested user object
-      const userObj = data.user || data.data?.user || {}
+      // 2. Direct parsing using actual flat response field names: token, userId, name, email, role, organizerStatus
+      const userObj = (data.user && typeof data.user === 'object') ? data.user : {}
       const userId = data.userId ?? data.id ?? userObj.userId ?? userObj.id
       const name = data.name ?? userObj.name ?? ''
       const email = data.email ?? userObj.email ?? credentials.email
       const role = (data.role ?? userObj.role ?? 'USER').toUpperCase()
       const organizerStatus = (data.organizerStatus ?? userObj.organizerStatus ?? 'NONE').toUpperCase()
 
-      // Save token and profile to localStorage
-      setToken(token)
+      // 3. User profile object
       const userProfile = {
         id: userId,
         userId,
@@ -108,11 +114,17 @@ export function AuthProvider({ children }) {
         role,
         organizerStatus,
       }
+
+      // 4. Multi-layer storage persistence (localStorage, sessionStorage, in-memory)
+      setToken(token)
       setStoredUser(userProfile)
+
+      // 5. Configure Axios default Authorization header immediately
       setAuthHeader(token)
 
-      // Update state
+      // 6. Update provider state immediately
       setUser(userProfile)
+      setIsInitialized(true)
 
       return {
         ...data,
@@ -145,10 +157,11 @@ export function AuthProvider({ children }) {
       user,
       isAuthenticated,
       isLoading,
+      isInitialized,
       login,
       logout,
     }),
-    [user, isAuthenticated, isLoading, login, logout]
+    [user, isAuthenticated, isLoading, isInitialized, login, logout]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,30 +1,101 @@
 import { STORAGE_KEYS } from '../constants/storage.js'
 
+// In-memory fallback if storage APIs throw or are restricted by browser environment
+let inMemoryToken = null
+let inMemoryUser = null
+
+const safeGetItem = (key) => {
+  try {
+    if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
+      const val = localStorage.getItem(key)
+      if (val !== null && val !== undefined) return val
+      return null
+    }
+  } catch {
+    // localStorage restricted (e.g., private browsing, iframe sandbox)
+  }
+  try {
+    if (typeof sessionStorage !== 'undefined' && typeof sessionStorage.getItem === 'function') {
+      const val = sessionStorage.getItem(key)
+      if (val !== null && val !== undefined) return val
+      return null
+    }
+  } catch {
+    // sessionStorage restricted
+  }
+  return null
+}
+
+const safeSetItem = (key, value) => {
+  try {
+    if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') {
+      localStorage.setItem(key, value)
+    }
+  } catch {
+    // Fallback
+  }
+  try {
+    if (typeof sessionStorage !== 'undefined' && typeof sessionStorage.setItem === 'function') {
+      sessionStorage.setItem(key, value)
+    }
+  } catch {
+    // Fallback
+  }
+}
+
+const safeRemoveItem = (key) => {
+  try {
+    if (typeof localStorage !== 'undefined' && typeof localStorage.removeItem === 'function') {
+      localStorage.removeItem(key)
+    }
+  } catch {
+    // Fallback
+  }
+  try {
+    if (typeof sessionStorage !== 'undefined' && typeof sessionStorage.removeItem === 'function') {
+      sessionStorage.removeItem(key)
+    }
+  } catch {
+    // Fallback
+  }
+}
+
 /**
  * Safely retrieve the stored JWT authentication token.
  * @returns {string | null}
  */
 export const getToken = () => {
   try {
-    return localStorage.getItem(STORAGE_KEYS.TOKEN)
+    if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
+      const stored = localStorage.getItem(STORAGE_KEYS.TOKEN) || (STORAGE_KEYS.TOKEN_COMPAT ? localStorage.getItem(STORAGE_KEYS.TOKEN_COMPAT) : null)
+      if (stored !== null && stored !== undefined) {
+        return stored
+      }
+      return null
+    }
   } catch {
-    return null
+    // Fallback to secondary storage layers
   }
+  const sessionVal = safeGetItem(STORAGE_KEYS.TOKEN) || (STORAGE_KEYS.TOKEN_COMPAT ? safeGetItem(STORAGE_KEYS.TOKEN_COMPAT) : null)
+  return sessionVal !== null ? sessionVal : inMemoryToken
 }
 
 /**
- * Safely store or clear the JWT authentication token.
+ * Safely store or clear the JWT authentication token across storage layers.
  * @param {string | null | undefined} token
  */
 export const setToken = (token) => {
-  try {
-    if (token) {
-      localStorage.setItem(STORAGE_KEYS.TOKEN, token)
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN)
+  inMemoryToken = token || null
+  if (token) {
+    safeSetItem(STORAGE_KEYS.TOKEN, token)
+    if (STORAGE_KEYS.TOKEN_COMPAT) {
+      safeSetItem(STORAGE_KEYS.TOKEN_COMPAT, token)
     }
-  } catch {
-    // Gracefully handle storage quota or private browsing restrictions
+  } else {
+    safeRemoveItem(STORAGE_KEYS.TOKEN)
+    if (STORAGE_KEYS.TOKEN_COMPAT) {
+      safeRemoveItem(STORAGE_KEYS.TOKEN_COMPAT)
+    }
   }
 }
 
@@ -32,12 +103,12 @@ export const setToken = (token) => {
  * Safely remove the stored JWT token and user info.
  */
 export const removeToken = () => {
-  try {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN)
-    localStorage.removeItem(STORAGE_KEYS.USER)
-  } catch {
-    // Graceful fallback
+  inMemoryToken = null
+  safeRemoveItem(STORAGE_KEYS.TOKEN)
+  if (STORAGE_KEYS.TOKEN_COMPAT) {
+    safeRemoveItem(STORAGE_KEYS.TOKEN_COMPAT)
   }
+  removeStoredUser()
 }
 
 /**
@@ -50,15 +121,27 @@ export const hasToken = () => {
 
 /**
  * Safely retrieve the stored user profile.
- * @returns {{ id?: number, userId?: number, name?: string, email?: string, role?: string } | null}
+ * @returns {{ id?: number, userId?: number, name?: string, email?: string, role?: string, organizerStatus?: string } | null}
  */
 export const getStoredUser = () => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.USER)
-    return raw ? JSON.parse(raw) : null
+    if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
+      const raw = localStorage.getItem(STORAGE_KEYS.USER) || (STORAGE_KEYS.USER_COMPAT ? localStorage.getItem(STORAGE_KEYS.USER_COMPAT) : null)
+      if (raw !== null && raw !== undefined) {
+        return JSON.parse(raw)
+      }
+      return null
+    }
   } catch {
-    return null
+    // Fallback to secondary storage layers
   }
+  const sessionRaw = safeGetItem(STORAGE_KEYS.USER) || (STORAGE_KEYS.USER_COMPAT ? safeGetItem(STORAGE_KEYS.USER_COMPAT) : null)
+  if (sessionRaw !== null && sessionRaw !== undefined) {
+    try {
+      return JSON.parse(sessionRaw)
+    } catch {}
+  }
+  return inMemoryUser
 }
 
 /**
@@ -66,14 +149,22 @@ export const getStoredUser = () => {
  * @param {object | null | undefined} user
  */
 export const setStoredUser = (user) => {
-  try {
-    if (user) {
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.USER)
+  inMemoryUser = user || null
+  if (user) {
+    try {
+      const json = JSON.stringify(user)
+      safeSetItem(STORAGE_KEYS.USER, json)
+      if (STORAGE_KEYS.USER_COMPAT) {
+        safeSetItem(STORAGE_KEYS.USER_COMPAT, json)
+      }
+    } catch {
+      // Serialization failure
     }
-  } catch {
-    // Graceful fallback
+  } else {
+    safeRemoveItem(STORAGE_KEYS.USER)
+    if (STORAGE_KEYS.USER_COMPAT) {
+      safeRemoveItem(STORAGE_KEYS.USER_COMPAT)
+    }
   }
 }
 
@@ -81,10 +172,10 @@ export const setStoredUser = (user) => {
  * Safely remove the stored user profile.
  */
 export const removeStoredUser = () => {
-  try {
-    localStorage.removeItem(STORAGE_KEYS.USER)
-  } catch {
-    // Graceful fallback
+  inMemoryUser = null
+  safeRemoveItem(STORAGE_KEYS.USER)
+  if (STORAGE_KEYS.USER_COMPAT) {
+    safeRemoveItem(STORAGE_KEYS.USER_COMPAT)
   }
 }
 
@@ -92,6 +183,8 @@ export const removeStoredUser = () => {
  * Clear the entire authenticated session (token and user data).
  */
 export const clearAuthSession = () => {
+  inMemoryToken = null
+  inMemoryUser = null
   removeToken()
   removeStoredUser()
 }

@@ -3,6 +3,7 @@ import { useAuth } from '../context'
 
 /**
  * Reusable route guard requiring both authentication and specific role permissions.
+ * - Waits for authentication initialization before checking roles or redirecting.
  * - Redirects unauthenticated users to `/login` with `state: { from: location }`.
  * - Redirects authenticated users lacking the required role to `redirectTo` (default `/`).
  *
@@ -16,10 +17,11 @@ export default function RoleBasedRoute({
   redirectTo = '/',
   children,
 }) {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, isInitialized } = useAuth()
   const location = useLocation()
 
-  if (isLoading) {
+  // Wait for authentication initialization rather than prematurely treating session as unauthenticated
+  if (isLoading || !isInitialized) {
     return (
       <div className="auth-loading-screen" role="status">
         <span className="auth-spinner" aria-hidden="true"></span>
@@ -29,7 +31,12 @@ export default function RoleBasedRoute({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    // Avoid redirect loops by never saving /login or /signup as 'from'
+    const safeFrom = (location.pathname === '/login' || location.pathname === '/signup')
+      ? '/home'
+      : location
+
+    return <Navigate to="/login" state={{ from: safeFrom }} replace />
   }
 
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]

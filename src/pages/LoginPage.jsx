@@ -8,9 +8,8 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const redirectTimeoutRef = useRef(null)
-  const { login, isAuthenticated, user } = useAuth()
+  const { login, isAuthenticated, user, isInitialized } = useAuth()
 
-  // Safely compute destination preventing loops back to /login or /signup
   // Safely compute destination preventing loops back to /login or /signup
   const rawFrom = location.state?.from
   const computeDestination = (role) => {
@@ -76,13 +75,14 @@ export default function LoginPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
-  // Redirect on initial arrival if already authenticated
+  // Reactive redirect when session is authenticated and initialized
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(computeDestination(user?.role), { replace: true })
+    if (isInitialized && isAuthenticated) {
+      const destination = computeDestination(user?.role)
+      navigate(destination, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isInitialized, isAuthenticated, user?.role])
 
   useEffect(() => {
     return () => {
