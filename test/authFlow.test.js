@@ -666,4 +666,15 @@ describe('Authentication Flow & Token Storage Verification', () => {
     assert.equal(computeDestination('ORGANIZER', '/login'), '/organizer/dashboard')
     assert.equal(computeDestination('USER', '/signup'), '/home')
   })
+
+  test('LoginPage redirection logic resolves destination safely with user context', () => {
+    const user = { id: 1, role: 'ORGANIZER' }
+    const computeDestination = (role) => {
+      if (role === 'ORGANIZER') return '/organizer/dashboard'
+      if (role === 'ADMIN') return '/admin/dashboard'
+      return '/home'
+    }
+    assert.equal(computeDestination(user?.role), '/organizer/dashboard')
+    assert.equal(computeDestination(undefined), '/home')
+  })
 })

@@ -8,7 +8,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const redirectTimeoutRef = useRef(null)
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, user } = useAuth()
 
   // Safely compute destination preventing loops back to /login or /signup
   const rawFrom = location.state?.from

@@ -512,7 +512,7 @@ export default function EventDetailsPage() {
             <aside className="event-cta-card">
               <div className="cta-header">
                 <h3 className="cta-title">Event Registration</h3>
-                <span className="badge badge-role">Phase 11E Active</span>
+                <span className="badge badge-role">Official Registration</span>
               </div>
 
               {/* Case 1: User Already Has a Registration for this Event */}
