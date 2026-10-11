@@ -32,7 +32,10 @@ export default function OrganizerEventFormPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const currentUserId = user?.id || user?.userId
-  const isEditMode = Boolean(id)
+
+  // Strict numeric ID validation: creation mode ("/organizer/events/new") does not have a numeric ID
+  const numericId = id != null && id !== 'new' && id !== 'undefined' ? Number(id) : null
+  const isEditMode = Boolean(numericId && !isNaN(numericId) && numericId > 0)
 
   // Form State
   const [formData, setFormData] = useState({
@@ -71,11 +74,15 @@ export default function OrganizerEventFormPage() {
 
   // Load existing event data in edit mode
   useEffect(() => {
-    if (!isEditMode) return
+    if (!isEditMode || !numericId) {
+      setIsLoadingEvent(false)
+      setServerError(null)
+      return
+    }
 
     let isMounted = true
 
-    getEventById(id)
+    getEventById(numericId)
       .then(async (res) => {
         if (!isMounted) return
         const ev = res.data
@@ -116,7 +123,7 @@ export default function OrganizerEventFormPage() {
         try {
           const volRes = await getVolunteerRequirements()
           if (isMounted && Array.isArray(volRes.data)) {
-            const req = volRes.data.find((r) => String(r.eventId) === String(id))
+            const req = volRes.data.find((r) => String(r.eventId) === String(numericId))
             if (req) {
               setEnableVolunteers(true)
               setVolunteerCount(String(req.requiredCount || ''))
@@ -141,7 +148,7 @@ export default function OrganizerEventFormPage() {
     return () => {
       isMounted = false
     }
-  }, [id, isEditMode, currentUserId, user?.role])
+  }, [numericId, isEditMode, currentUserId, user?.role])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -247,35 +254,53 @@ export default function OrganizerEventFormPage() {
       }
     }
 
+    // Safely format time to ISO LocalTime (HH:mm:ss) without duplicate second segments
+    const formatTimePayload = (timeStr) => {
+      if (!timeStr || typeof timeStr !== 'string') return null
+      const trimmed = timeStr.trim()
+      if (!trimmed) return null
+      if (trimmed.length === 5 && trimmed.includes(':')) {
+        return `${trimmed}:00`
+      }
+      return trimmed
+    }
+
+    // Safely format registration deadline to ISO LocalDateTime without duplicate second segments
+    const formatDeadlinePayload = (deadlineStr) => {
+      if (!deadlineStr || typeof deadlineStr !== 'string') return null
+      const trimmed = deadlineStr.trim()
+      if (!trimmed) return null
+      if (trimmed.length === 16) {
+        return `${trimmed}:00`
+      }
+      return trimmed
+    }
+
     // Format payload
     const payload = {
       title: formData.title.trim(),
       description: formData.description.trim() || null,
       category: formData.category || null,
       date: formData.date,
-      startTime: formData.startTime ? `${formData.startTime}:00` : null,
-      endTime: formData.endTime ? `${formData.endTime}:00` : null,
+      startTime: formatTimePayload(formData.startTime),
+      endTime: formatTimePayload(formData.endTime),
       venue: formData.venue.trim() || null,
       capacity: formData.capacity ? Number(formData.capacity) : null,
       eligibility: formData.eligibility.trim() || null,
-      registrationDeadline: formData.registrationDeadline
-        ? (formData.registrationDeadline.length === 16
-            ? `${formData.registrationDeadline}:00`
-            : formData.registrationDeadline)
-        : null,
+      registrationDeadline: formatDeadlinePayload(formData.registrationDeadline),
       organizerId: currentUserId,
       imageUrl: finalImageUrl,
     }
 
     try {
-      if (isEditMode) {
+      if (isEditMode && numericId) {
         // 1. Update Event
-        await updateEvent(id, payload)
+        await updateEvent(numericId, payload)
 
         // 2. Handle Volunteer Requirements update/create/delete
         if (enableVolunteers) {
           const reqPayload = {
-            eventId: Number(id),
+            eventId: Number(numericId),
             requiredCount: Number(volunteerCount),
             description: volunteerDescription.trim() || null,
           }
