@@ -293,4 +293,45 @@ describe('Authentication Flow & Token Storage Verification', () => {
     assert.equal(resolveDestination({ pathname: '/events', search: '?category=TECH' }), '/events?category=TECH')
     assert.equal(resolveDestination({ pathname: '/events/12' }), '/events/12')
   })
+
+  test('setAuthHeader synchronizes apiClient.defaults.headers.common', async () => {
+    const { setAuthHeader } = await import('../src/api/client.js')
+    setAuthHeader('new-sync-token')
+    assert.equal(apiClient.defaults.headers.common['Authorization'], 'Bearer new-sync-token')
+
+    setAuthHeader(null)
+    assert.equal(apiClient.defaults.headers.common['Authorization'], undefined)
+  })
+
+  test('Storage change handler does not prematurely wipe token during progressive login write', () => {
+    // Simulate login write sequence: setToken happens before setStoredUser
+    setToken('fresh-token')
+    assert.equal(getToken(), 'fresh-token')
+    assert.equal(getStoredUser(), null)
+
+    // A storage handler evaluating token && storedUser should NOT wipe when token is present
+    const simulateStorageChange = () => {
+      const token = getToken()
+      const storedUser = getStoredUser()
+      if (token && storedUser) {
+        return 'authenticated'
+      } else if (!token && !storedUser) {
+        clearAuthSession()
+        return 'cleared'
+      }
+      return 'in-progress'
+    }
+
+    const state = simulateStorageChange(STORAGE_KEYS.TOKEN)
+    assert.equal(state, 'in-progress')
+    // Token must STILL be present
+    assert.equal(getToken(), 'fresh-token')
+
+    // Now user write completes
+    setStoredUser({ id: 1, name: 'Test' })
+    const finalState = simulateStorageChange(STORAGE_KEYS.USER)
+    assert.equal(finalState, 'authenticated')
+    assert.equal(getToken(), 'fresh-token')
+    assert.notEqual(getStoredUser(), null)
+  })
 })

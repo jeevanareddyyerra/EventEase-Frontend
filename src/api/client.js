@@ -32,6 +32,21 @@ export const apiClient = axios.create({
   timeout: 15000,
 })
 
+// Synchronize default common Authorization header for instant synchronous availability
+export const setAuthHeader = (token) => {
+  if (token) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  } else {
+    delete apiClient.defaults.headers.common['Authorization']
+  }
+}
+
+// Initialize default Authorization header from storage on module startup
+const initialToken = getToken()
+if (initialToken) {
+  setAuthHeader(initialToken)
+}
+
 // Request interceptor: attach stored JWT as Bearer token when available
 apiClient.interceptors.request.use(
   (config) => {
@@ -61,9 +76,12 @@ apiClient.interceptors.response.use(
     // Clear stale session on 401 Unauthorized ONLY if:
     // 1. The request was an authenticated request (carried an Authorization header)
     // 2. The request was NOT an unauthenticated authentication endpoint (e.g. login/signup failure)
-    const authVal = error?.config?.headers?.Authorization
-      ? error.config.headers.Authorization
-      : (typeof error?.config?.headers?.get === 'function' ? error.config.headers.get('Authorization') : null)
+    const headers = error?.config?.headers
+    const authVal = headers && (
+      typeof headers.get === 'function'
+        ? headers.get('Authorization') || headers.get('authorization')
+        : headers.Authorization || headers.authorization || headers['Authorization'] || headers['authorization']
+    )
     const hadAuthHeader = Boolean(authVal)
     const isAuthEndpoint = Boolean(
       error?.config?.url &&
@@ -72,6 +90,7 @@ apiClient.interceptors.response.use(
 
     if (formattedError.status === 401 && hadAuthHeader && !isAuthEndpoint) {
       removeToken()
+      setAuthHeader(null)
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('eventease:auth:session-expired'))
       }
