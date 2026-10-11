@@ -7,7 +7,6 @@ import {
   getEventById,
   createEvent,
   updateEvent,
-  uploadEventImage,
   getVolunteerRequirements,
   createVolunteerRequirement,
   updateVolunteerRequirement,
@@ -51,12 +50,6 @@ export default function OrganizerEventFormPage() {
     registrationDeadline: '',
     imageUrl: '',
   })
-
-  // Poster Image State
-  const [selectedImageFile, setSelectedImageFile] = useState(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [imageUploadError, setImageUploadError] = useState(null)
 
   // Volunteer Requirement Form State
   const [enableVolunteers, setEnableVolunteers] = useState(false)
@@ -115,10 +108,6 @@ export default function OrganizerEventFormPage() {
           imageUrl: ev.imageUrl || '',
         })
 
-        if (ev.imageUrl) {
-          setImagePreviewUrl(ev.imageUrl)
-        }
-
         // Check for existing volunteer requirement
         try {
           const volRes = await getVolunteerRequirements()
@@ -156,34 +145,6 @@ export default function OrganizerEventFormPage() {
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: null }))
     }
-  }
-
-  const handleImageFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
-      setImageUploadError('Invalid image format. Allowed formats: JPEG, PNG, WebP, GIF.')
-      return
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setImageUploadError('Image file size must not exceed 5MB.')
-      return
-    }
-
-    setImageUploadError(null)
-    setSelectedImageFile(file)
-    const preview = URL.createObjectURL(file)
-    setImagePreviewUrl(preview)
-  }
-
-  const handleRemoveImage = () => {
-    setSelectedImageFile(null)
-    setImagePreviewUrl('')
-    setFormData((prev) => ({ ...prev, imageUrl: '' }))
-    setImageUploadError(null)
   }
 
   const validate = () => {
@@ -232,27 +193,7 @@ export default function OrganizerEventFormPage() {
 
     setIsSubmitting(true)
     setServerError(null)
-    setImageUploadError(null)
-
-    // 1. Upload Poster Image to persistent cloud storage if new file selected
-    let finalImageUrl = formData.imageUrl ? formData.imageUrl.trim() : null
-    if (selectedImageFile) {
-      setIsUploadingImage(true)
-      try {
-        const uploadRes = await uploadEventImage(selectedImageFile)
-        if (uploadRes?.data?.imageUrl) {
-          finalImageUrl = uploadRes.data.imageUrl
-          setFormData((prev) => ({ ...prev, imageUrl: uploadRes.data.imageUrl }))
-        }
-      } catch (uploadErr) {
-        setIsSubmitting(false)
-        setIsUploadingImage(false)
-        setImageUploadError(uploadErr?.message || 'Failed to upload event poster.')
-        return
-      } finally {
-        setIsUploadingImage(false)
-      }
-    }
+    const finalImageUrl = formData.imageUrl ? formData.imageUrl.trim() : null
 
     // Safely format time to ISO LocalTime (HH:mm:ss) without duplicate second segments
     const formatTimePayload = (timeStr) => {
@@ -524,107 +465,9 @@ export default function OrganizerEventFormPage() {
                 </div>
               </fieldset>
 
-              {/* Event Poster / Image Upload Section */}
-              <fieldset className="form-fieldset">
-                <legend className="form-legend">2. Event Poster &amp; Visual Media</legend>
-
-                <div className="form-group">
-                  <label htmlFor="posterUpload" className="form-label">
-                    Event Poster / Banner Image
-                  </label>
-                  <p className="field-hint" style={{ marginTop: 0, marginBottom: '0.75rem' }}>
-                    Upload an event poster (JPG, PNG, WebP up to 5MB). Persisted securely to cloud storage.
-                  </p>
-
-                  {imagePreviewUrl ? (
-                    <div
-                      className="poster-preview-card"
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.75rem',
-                        alignItems: 'flex-start',
-                        padding: '1rem',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        background: 'var(--bg-subtle, rgba(255,255,255,0.03))',
-                      }}
-                    >
-                      <img
-                        src={imagePreviewUrl}
-                        alt="Event Poster Preview"
-                        style={{
-                          maxHeight: '260px',
-                          maxWidth: '100%',
-                          objectFit: 'cover',
-                          borderRadius: '6px',
-                          border: '1px solid var(--border)',
-                        }}
-                      />
-                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-small"
-                          onClick={handleRemoveImage}
-                          disabled={isSubmitting || isUploadingImage || Boolean(cannotEditStatus)}
-                        >
-                          ✕ Remove Poster
-                        </button>
-                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                          {selectedImageFile
-                            ? `Selected: ${selectedImageFile.name} (${Math.round(selectedImageFile.size / 1024)} KB)`
-                            : 'Existing Poster Attached'}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="poster-upload-box"
-                      style={{
-                        border: '2px dashed var(--border)',
-                        borderRadius: '8px',
-                        padding: '1.75rem 1rem',
-                        textAlign: 'center',
-                        background: 'var(--bg-subtle, rgba(255,255,255,0.02))',
-                      }}
-                    >
-                      <input
-                        id="posterUpload"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        onChange={handleImageFileChange}
-                        disabled={isSubmitting || isUploadingImage || Boolean(cannotEditStatus)}
-                        style={{ display: 'none' }}
-                      />
-                      <label
-                        htmlFor="posterUpload"
-                        className="btn btn-secondary"
-                        style={{ cursor: 'pointer', display: 'inline-block' }}
-                      >
-                        📁 Choose Image File
-                      </label>
-                      <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        Recommended size: 1200×630px or 16:9 • Formats: JPG, PNG, WebP up to 5MB
-                      </p>
-                    </div>
-                  )}
-
-                  {imageUploadError && (
-                    <span className="field-error-text" style={{ display: 'block', marginTop: '0.5rem' }}>
-                      {imageUploadError}
-                    </span>
-                  )}
-                  {isUploadingImage && (
-                    <span style={{ display: 'block', marginTop: '0.5rem', color: 'var(--accent)', fontSize: '0.85rem' }}>
-                      ⏳ Uploading poster to secure cloud storage...
-                    </span>
-                  )}
-                </div>
-              </fieldset>
-
               {/* Date, Time & Location Section */}
               <fieldset className="form-fieldset">
-                <legend className="form-legend">3. Schedule &amp; Venue</legend>
+                <legend className="form-legend">2. Schedule &amp; Venue</legend>
 
                 {/* Date Row */}
                 <div className="form-row">
@@ -703,7 +546,7 @@ export default function OrganizerEventFormPage() {
 
               {/* Eligibility & Deadlines Section */}
               <fieldset className="form-fieldset">
-                <legend className="form-legend">4. Registration &amp; Eligibility</legend>
+                <legend className="form-legend">3. Registration &amp; Eligibility</legend>
 
                 <div className="form-row">
                   <div className="form-group">
@@ -741,7 +584,7 @@ export default function OrganizerEventFormPage() {
 
               {/* Volunteer Recruitment Section */}
               <fieldset className="form-fieldset">
-                <legend className="form-legend">5. Volunteer Opportunities (Optional)</legend>
+                <legend className="form-legend">4. Volunteer Opportunities (Optional)</legend>
 
                 <div className="form-checkbox-row">
                   <input
