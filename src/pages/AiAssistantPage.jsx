@@ -211,7 +211,7 @@ export default function AiAssistantPage() {
           <section className="ai-assistant-header">
             <div className="ai-header-badge-row">
               <span className="badge badge-accent">✨ EventEase Assistant</span>
-              <span className="badge badge-success">RAG Grounded</span>
+              <span className="badge badge-success">Verified Answers</span>
             </div>
             <h1 className="hero-title" style={{ fontSize: '2.4rem', textAlign: 'left', margin: '0.5rem 0' }}>
               AI Event Assistant
@@ -538,9 +538,9 @@ export default function AiAssistantPage() {
                   {response.topSimilarityScore > 0 && (
                     <span
                       className="badge badge-role"
-                      title="Highest cosine similarity score (0.0 to 1.0) between query and indexed document chunk embeddings (vector similarity, not calibrated answer confidence)"
+                      title="Document match relevance based on official event materials"
                     >
-                      Vector Similarity: {response.topSimilarityScore.toFixed(3)}
+                      Match: {(response.topSimilarityScore * 100).toFixed(0)}%
                     </span>
                   )}
                 </div>
@@ -609,7 +609,7 @@ export default function AiAssistantPage() {
                       Source Citations &amp; Evidence ({response.sources.length})
                     </span>
                     <span className="ai-citations-hint">
-                      Grounding evidence from indexed published event documents (cosine similarity &ge; threshold)
+                      Verified references from official event documentation
                     </span>
                   </div>
 
@@ -623,9 +623,9 @@ export default function AiAssistantPage() {
                           {source.similarityScore > 0 && (
                             <span
                               className="ai-match-score"
-                              title="Cosine text similarity between inquiry and document chunk (not calibrated answer confidence)"
+                              title="Document section relevance match"
                             >
-                              Cosine Similarity: {source.similarityScore.toFixed(3)}
+                              Relevance: {(source.similarityScore * 100).toFixed(0)}%
                             </span>
                           )}
                         </div>
@@ -644,12 +644,6 @@ export default function AiAssistantPage() {
                             source.eventTitle || 'Unknown Event'
                           )}
                         </div>
-
-                        {source.chunkId && (
-                          <div className="ai-citation-chunk-tag">
-                            ID: {source.chunkId}
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
@@ -666,8 +660,8 @@ export default function AiAssistantPage() {
               </span>
               <h2 className="ai-empty-title">Ready for Your Questions</h2>
               <p className="ai-empty-desc">
-                EventEase Assistant uses local vector embeddings and Google Gemini RAG to retrieve
-                actual document text and provide grounded, trustworthy answers with citations.
+                EventEase Assistant searches official published event schedules, guidelines, and
+                announcements to provide instant, trustworthy answers with direct citations.
               </p>
               <div className="ai-empty-feature-grid">
                 <div className="ai-feature-pill">

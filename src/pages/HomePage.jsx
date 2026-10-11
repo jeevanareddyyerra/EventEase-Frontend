@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
+import { formatFriendlyRole } from '../utils/formatters'
 
 /**
  * Role-specific preview card definitions.
@@ -138,22 +139,17 @@ export default function HomePage() {
               <span>•</span>
               <span>
                 <strong>Role:</strong>{' '}
-                <span className="badge badge-role">{userRole}</span>
-              </span>
-              <span>•</span>
-              <span>
-                <strong>Session:</strong>{' '}
-                <span className="badge badge-success">Active JWT</span>
+                <span className="badge badge-role">{formatFriendlyRole(user?.role)}</span>
               </span>
             </div>
           </div>
 
           <div className="home-welcome-actions">
-            <Link to="/profile" className="btn btn-primary">
-              View Profile
+            <Link to="/events" className="btn btn-primary">
+              Explore Events
             </Link>
-            <Link to="/" className="btn btn-secondary">
-              View Public Site
+            <Link to="/profile" className="btn btn-secondary">
+              View Profile
             </Link>
             <button
               type="button"
@@ -177,7 +173,7 @@ export default function HomePage() {
                 : 'Participant Workspace'}
             </h2>
             <p className="section-subtitle">
-              Role-authorized workspace features for <strong>{userRole}</strong>
+              Workspace features and tools for <strong>{formatFriendlyRole(user?.role)}s</strong>
             </p>
           </div>
 
@@ -245,18 +241,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Architecture & Navigation Notes */}
+        {/* Welcome & Discovery Callout */}
         <section className="connection-card">
           <div className="connection-header">
             <div>
-              <span className="connection-title">Authenticated Starting Point</span>
+              <span className="connection-title">Welcome to EventEase</span>
               <p className="hero-description" style={{ margin: '0.4rem 0 0', fontSize: '0.85rem' }}>
-                You are securely signed in via stateless JWT Bearer authentication. Route access
-                is enforced by <code>ProtectedRoute</code> and <code>RoleBasedRoute</code> guards.
+                Discover upcoming hackathons, tech symposiums, workshops, and student community meetups.
               </p>
             </div>
-            <Link to="/" className="btn btn-secondary">
-              Explore Public Landing
+            <Link to="/events" className="btn btn-primary">
+              Explore Upcoming Events &rarr;
             </Link>
           </div>
         </section>

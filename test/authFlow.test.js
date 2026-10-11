@@ -530,4 +530,19 @@ describe('Authentication Flow & Token Storage Verification', () => {
       { allowed: true, redirect: null }
     )
   })
+
+  test('formatFriendlyRole converts backend role strings into clean user-facing labels', async () => {
+    const { formatFriendlyRole } = await import('../src/utils/formatters.js')
+
+    assert.equal(formatFriendlyRole('USER'), 'Participant')
+    assert.equal(formatFriendlyRole('ROLE_USER'), 'Participant')
+    assert.equal(formatFriendlyRole('participant'), 'Participant')
+    assert.equal(formatFriendlyRole('ORGANIZER'), 'Organizer')
+    assert.equal(formatFriendlyRole('ROLE_ORGANIZER'), 'Organizer')
+    assert.equal(formatFriendlyRole('ADMIN'), 'Admin')
+    assert.equal(formatFriendlyRole('ROLE_ADMIN'), 'Admin')
+    assert.equal(formatFriendlyRole(null), 'Participant')
+    assert.equal(formatFriendlyRole(undefined), 'Participant')
+    assert.equal(formatFriendlyRole(''), 'Participant')
+  })
 })

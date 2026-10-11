@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context'
+import { formatFriendlyRole } from '../utils/formatters'
 
 export default function Header() {
   const location = useLocation()
@@ -47,6 +48,12 @@ export default function Header() {
             >
               AI Assistant
             </Link>
+            <Link
+              to="/my-registrations"
+              className={`nav-link ${location.pathname.startsWith('/my-registrations') ? 'nav-link-active' : ''}`}
+            >
+              My Registrations
+            </Link>
             {(user?.role === 'ORGANIZER' || user?.role === 'ADMIN') && (
               <Link
                 to="/organizer/dashboard"
@@ -64,24 +71,6 @@ export default function Header() {
               </Link>
             )}
             <Link
-              to="/my-registrations"
-              className={`nav-link ${location.pathname.startsWith('/my-registrations') ? 'nav-link-active' : ''}`}
-            >
-              My Registrations
-            </Link>
-            <Link
-              to="/profile"
-              className={`nav-link ${location.pathname === '/profile' ? 'nav-link-active' : ''}`}
-            >
-              Profile
-            </Link>
-            <Link
-              to="/"
-              className={`nav-link ${location.pathname === '/' ? 'nav-link-active' : ''}`}
-            >
-              Public Site
-            </Link>
-            <Link
               to="/profile"
               className="nav-user"
               title={`View Profile (${user?.email || ''})`}
@@ -89,7 +78,7 @@ export default function Header() {
             >
               <span className="nav-user-greeting">Hi, {user?.name || 'User'}</span>
               {user?.role && (
-                <span className="badge badge-role">{user.role}</span>
+                <span className="badge badge-role">{formatFriendlyRole(user.role)}</span>
               )}
             </Link>
             <button

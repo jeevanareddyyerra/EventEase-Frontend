@@ -97,3 +97,18 @@ export const getTodayDateString = () => {
   return `${year}-${month}-${day}`
 }
 
+/**
+ * Format a backend user role into a friendly user-facing label.
+ *
+ * @param {string} [role]
+ * @returns {string} "Participant" | "Organizer" | "Admin"
+ */
+export const formatFriendlyRole = (role) => {
+  if (!role) return 'Participant'
+  const normalized = String(role).toUpperCase().replace(/^ROLE_/, '')
+  if (normalized === 'ADMIN') return 'Admin'
+  if (normalized === 'ORGANIZER') return 'Organizer'
+  return 'Participant'
+}
+
+

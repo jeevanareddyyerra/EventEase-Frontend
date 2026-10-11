@@ -12,7 +12,7 @@ import {
   deleteUser,
   getAllEvents,
 } from '../api'
-import { formatDate, formatTimeRange, formatDateTime } from '../utils/formatters'
+import { formatDate, formatTimeRange, formatDateTime, formatFriendlyRole } from '../utils/formatters'
 
 export default function AdminDashboardPage() {
   const { user: currentUser } = useAuth()
@@ -854,7 +854,7 @@ export default function AdminDashboardPage() {
                           </td>
                           <td>
                             <span className={`badge ${getRoleBadgeClass(u.role)}`}>
-                              {u.role}
+                              {formatFriendlyRole(u.role)}
                             </span>
                           </td>
                           <td>
@@ -1156,7 +1156,7 @@ export default function AdminDashboardPage() {
                   <strong>{deleteModalUser.name}</strong> ({deleteModalUser.email})
                   <br />
                   <span style={{ color: 'var(--text)', fontSize: '0.85rem' }}>
-                    Role: {deleteModalUser.role} &bull; ID: #{deleteModalUser.id}
+                    Role: {formatFriendlyRole(deleteModalUser.role)} &bull; ID: #{deleteModalUser.id}
                   </span>
                 </div>
                 <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#ef4444' }}>

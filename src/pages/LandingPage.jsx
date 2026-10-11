@@ -346,20 +346,20 @@ export default function LandingPage() {
         <section className="ai-showcase-section">
           <div className="ai-showcase-card">
             <div className="ai-showcase-badge">
-              <span className="badge badge-accent">Intelligent Retrieval-Augmented Generation</span>
+              <span className="badge badge-accent">AI-Powered Event Assistant</span>
             </div>
             <h2 className="ai-showcase-heading">Meet the EventEase AI Assistant</h2>
             <p className="ai-showcase-text">
               Have questions about schedules, speaker bios, dress codes, or registration prerequisites?
-              Our AI Assistant answers instantly using semantic embeddings computed over official event documents.
+              Our AI Assistant answers instantly based on official event schedules and guidelines.
             </p>
 
             <div className="ai-features-grid">
               <div className="ai-feature-pill">
-                <span className="ai-feature-icon" aria-hidden="true">🧠</span>
+                <span className="ai-feature-icon" aria-hidden="true">💡</span>
                 <div>
-                  <strong>384-Dimensional ONNX Embeddings</strong>
-                  <p>Local MiniLM vector model produces grounded semantic search without sending document context externally.</p>
+                  <strong>Contextual Document Search</strong>
+                  <p>Smart search understands your questions and finds relevant details across event guides.</p>
                 </div>
               </div>
 
@@ -374,8 +374,8 @@ export default function LandingPage() {
               <div className="ai-feature-pill">
                 <span className="ai-feature-icon" aria-hidden="true">🛡️</span>
                 <div>
-                  <strong>Anti-Hallucination Guardrails</strong>
-                  <p>Strict similarity thresholding guarantees that only verified event information is presented.</p>
+                  <strong>Verified Accuracy</strong>
+                  <p>Answers are grounded exclusively in official event materials so you receive dependable information.</p>
                 </div>
               </div>
             </div>

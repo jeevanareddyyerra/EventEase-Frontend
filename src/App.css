@@ -857,8 +857,8 @@
 
 .footer-columns {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.2fr;
-  gap: 2.5rem;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
 }
 
 .footer-col {
@@ -1032,6 +1032,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.nav-user:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
 }
 
 .nav-user-greeting {
@@ -1044,9 +1054,9 @@
   background: rgba(99, 102, 241, 0.12);
   color: #6366f1;
   border: 1px solid rgba(99, 102, 241, 0.3);
-  font-size: 0.7rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
 }
 
 @media (prefers-color-scheme: dark) {

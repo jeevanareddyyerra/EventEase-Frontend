@@ -4,7 +4,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
 import { getUserRegistrations } from '../api'
-import { formatDate, formatDateTime, getTodayDateString } from '../utils/formatters'
+import { formatDate, formatDateTime, getTodayDateString, formatFriendlyRole } from '../utils/formatters'
 
 export default function ProfilePage() {
   const { user, logout } = useAuth()
@@ -191,25 +191,20 @@ export default function ProfilePage() {
               <div className="profile-field">
                 <span className="profile-field-label">Platform Role</span>
                 <span className="profile-field-value">
-                  <code>{userRole}</code>
+                  <span className="badge badge-role">{formatFriendlyRole(userRole)}</span>
                 </span>
-              </div>
-
-              <div className="profile-field">
-                <span className="profile-field-label">Authentication Type</span>
-                <span className="profile-field-value">JWT Bearer Token</span>
               </div>
             </div>
 
-            {/* Backend Capabilities Note */}
+            {/* Account Management Note */}
             <div className="profile-notice-box">
               <span style={{ fontSize: '1.25rem' }} aria-hidden="true">ℹ</span>
               <div>
-                <strong>Account Management Policy</strong>
+                <strong>Account Details &amp; Permissions</strong>
                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', lineHeight: 1.5 }}>
-                  Profile modifications are administered centrally. In compliance with EventEase
-                  backend access controls, self-service profile updates are not currently exposed
-                  over public endpoints.
+                  Profile details and role permissions are managed centrally. Please contact an event
+                  coordinator or platform administrator if you need to update your contact information
+                  or account access.
                 </p>
               </div>
             </div>
