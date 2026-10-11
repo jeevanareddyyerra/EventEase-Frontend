@@ -35,6 +35,8 @@ export {
   createVolunteerRequirement,
   updateVolunteerRequirement,
   deleteVolunteerRequirement,
+  uploadEventImage,
+  deleteEventImage,
   organizerEventApi,
 } from './organizerEventApi.js'
 export {
@@ -69,5 +71,20 @@ export {
   deleteCertificate,
   certificateApi,
 } from './certificateApi.js'
+export {
+  createTeam,
+  getTeamById,
+  getAllTeams,
+  getTeamsByEvent,
+  updateTeam,
+  deleteTeam,
+  createTeamMember,
+  getTeamMemberById,
+  getAllTeamMembers,
+  getTeamMembersByTeam,
+  updateTeamMember,
+  deleteTeamMember,
+  teamApi,
+} from './teamApi.js'
 export { default } from './client.js'
 

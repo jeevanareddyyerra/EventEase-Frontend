@@ -400,6 +400,27 @@ export default function EventsPage() {
             <div className="cards-grid">
               {events.map((event) => (
                 <article key={event.id} className="preview-card event-card">
+                  {event.imageUrl && (
+                    <div
+                      className="event-card-poster-wrapper"
+                      style={{
+                        width: '100%',
+                        height: '180px',
+                        overflow: 'hidden',
+                        borderRadius: '6px 6px 0 0',
+                        position: 'relative',
+                        background: 'var(--bg-subtle)',
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                    >
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
                   <div className="event-card-content">
                     <div className="preview-card-header">
                       <span className="badge badge-accent">

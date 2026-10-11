@@ -1509,6 +1509,25 @@ export default function OrganizerDashboardPage() {
 
                       return (
                         <article key={ev.id} className="organizer-event-card">
+                          {ev.imageUrl && (
+                            <div
+                              style={{
+                                width: '100%',
+                                maxHeight: '140px',
+                                overflow: 'hidden',
+                                borderRadius: '6px 6px 0 0',
+                                marginBottom: '0.75rem',
+                                borderBottom: '1px solid var(--border)',
+                              }}
+                            >
+                              <img
+                                src={ev.imageUrl}
+                                alt={ev.title}
+                                style={{ width: '100%', height: '140px', objectFit: 'cover' }}
+                                loading="lazy"
+                              />
+                            </div>
+                          )}
                           <div className="organizer-event-main">
                             <div>
                               <div className="organizer-card-badges">

@@ -94,6 +94,36 @@ export const deleteVolunteerRequirement = (id) => {
   return apiClient.delete(`/volunteer-requirements/${id}`)
 }
 
+/**
+ * Upload an image file for an event poster.
+ * Endpoint: POST /api/events/upload-image
+ *
+ * @param {File|Blob} file
+ * @returns {Promise<import('axios').AxiosResponse<{ imageUrl: string, publicId: string }>>}
+ */
+export const uploadEventImage = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return apiClient.post('/events/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
+/**
+ * Delete an event poster image by its publicId.
+ * Endpoint: DELETE /api/events/images
+ *
+ * @param {string} publicId
+ * @returns {Promise<import('axios').AxiosResponse>}
+ */
+export const deleteEventImage = (publicId) => {
+  return apiClient.delete('/events/images', {
+    params: { publicId },
+  })
+}
+
 export const organizerEventApi = {
   getEventsByOrganizer,
   createEvent,
@@ -103,6 +133,8 @@ export const organizerEventApi = {
   createVolunteerRequirement,
   updateVolunteerRequirement,
   deleteVolunteerRequirement,
+  uploadEventImage,
+  deleteEventImage,
 }
 
 export default organizerEventApi

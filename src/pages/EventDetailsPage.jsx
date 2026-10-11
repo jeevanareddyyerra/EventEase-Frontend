@@ -11,6 +11,8 @@ import {
   getUserRegistrations,
   getParticipantCount,
   getVolunteerCount,
+  getTeamsByEvent,
+  createTeam,
 } from '../api'
 import { formatDate, formatTimeRange, formatDateTime } from '../utils/formatters'
 
@@ -43,6 +45,14 @@ export default function EventDetailsPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [actionSuccess, setActionSuccess] = useState(null)
   const [actionError, setActionError] = useState(null)
+
+  // Team Formation States
+  const [eventTeams, setEventTeams] = useState([])
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false)
+  const [newTeamName, setNewTeamName] = useState('')
+  const [isCreatingTeam, setIsCreatingTeam] = useState(false)
+  const [teamActionError, setTeamActionError] = useState(null)
+  const [teamActionSuccess, setTeamActionSuccess] = useState(null)
 
   const handleRetry = () => {
     setIsLoading(true)
@@ -105,6 +115,16 @@ export default function EventDetailsPage() {
           } catch {
             // Non-blocking
           }
+        }
+
+        // 4. Fetch Event Teams
+        try {
+          const teamsRes = await getTeamsByEvent(id)
+          if (isMounted && Array.isArray(teamsRes.data)) {
+            setEventTeams(teamsRes.data)
+          }
+        } catch {
+          // Non-blocking
         }
       })
       .catch((err) => {
@@ -206,6 +226,33 @@ export default function EventDetailsPage() {
       setActionError(err?.message || 'Failed to cancel registration. Please try again.')
     } finally {
       setIsCancelling(false)
+    }
+  }
+
+  // Team Creation
+  const handleCreateTeam = async (e) => {
+    e.preventDefault()
+    if (!newTeamName.trim()) return
+
+    setIsCreatingTeam(true)
+    setTeamActionError(null)
+    setTeamActionSuccess(null)
+
+    try {
+      const res = await createTeam({
+        name: newTeamName.trim(),
+        eventId: Number(id),
+        leaderId: currentUserId,
+      })
+      const created = res.data
+      setEventTeams((prev) => [...prev, created])
+      setTeamActionSuccess(`Team "${created.name}" created successfully!`)
+      setNewTeamName('')
+      setShowCreateTeamModal(false)
+    } catch (err) {
+      setTeamActionError(err?.message || 'Failed to create team.')
+    } finally {
+      setIsCreatingTeam(false)
     }
   }
 
@@ -367,6 +414,26 @@ export default function EventDetailsPage() {
           <article className="event-details-container">
             {/* Main Event Information Card */}
             <div className="event-details-card">
+              {event.imageUrl && (
+                <div
+                  className="event-hero-poster-wrapper"
+                  style={{
+                    width: '100%',
+                    maxHeight: '380px',
+                    overflow: 'hidden',
+                    borderRadius: '8px',
+                    marginBottom: '1.5rem',
+                    background: 'var(--bg-subtle)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <img
+                    src={event.imageUrl}
+                    alt={event.title}
+                    style={{ width: '100%', height: '100%', maxHeight: '380px', objectFit: 'cover' }}
+                  />
+                </div>
+              )}
               <div className="event-details-hero">
                 <div className="event-hero-badges">
                   <span className="badge badge-accent">
@@ -506,6 +573,80 @@ export default function EventDetailsPage() {
                   </div>
                 </div>
               )}
+
+              {/* Teams & Collaboration Section */}
+              <div className="event-section">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <h2 className="event-section-title" style={{ margin: 0 }}>
+                    👥 Teams &amp; Collaboration ({eventTeams.length})
+                  </h2>
+                  {userRegistration && userRegistration.type === 'PARTICIPANT' && userRegistration.status !== 'CANCELLED' && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-small"
+                      onClick={() => {
+                        setShowCreateTeamModal(true)
+                        setTeamActionError(null)
+                      }}
+                    >
+                      + Form a Team
+                    </button>
+                  )}
+                </div>
+
+                {teamActionSuccess && (
+                  <div className="alert alert-success" style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
+                    ✓ {teamActionSuccess}
+                  </div>
+                )}
+
+                {showCreateTeamModal && (
+                  <form onSubmit={handleCreateTeam} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-subtle, rgba(255,255,255,0.02))', marginBottom: '1rem' }}>
+                    <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>Form New Team for this Event</h3>
+                    <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                      <label htmlFor="teamNameInput" className="form-label" style={{ fontSize: '0.85rem' }}>Team Name</label>
+                      <input
+                        id="teamNameInput"
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Code Ninjas, Team Alpha"
+                        value={newTeamName}
+                        onChange={(e) => setNewTeamName(e.target.value)}
+                        maxLength={100}
+                        required
+                      />
+                    </div>
+                    {teamActionError && (
+                      <span className="field-error-text" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                        {teamActionError}
+                      </span>
+                    )}
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button type="submit" className="btn btn-primary btn-small" disabled={isCreatingTeam}>
+                        {isCreatingTeam ? 'Creating...' : 'Create Team'}
+                      </button>
+                      <button type="button" className="btn btn-secondary btn-small" onClick={() => setShowCreateTeamModal(false)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {eventTeams.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                    No teams formed yet for this event. {userRegistration?.type === 'PARTICIPANT' ? 'Be the first to form a team!' : 'Register as a participant to form a team.'}
+                  </p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                    {eventTeams.map((tm) => (
+                      <div key={tm.id} style={{ padding: '0.75rem 1rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--card-bg, rgba(255,255,255,0.02))' }}>
+                        <strong style={{ display: 'block', fontSize: '0.92rem' }}>{tm.name}</strong>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Leader: {tm.leaderName || `User #${tm.leaderId}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Interactive Registration Call-To-Action Box */}

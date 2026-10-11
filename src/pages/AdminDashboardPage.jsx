@@ -778,17 +778,26 @@ export default function AdminDashboardPage() {
                             <span className="badge badge-secondary">#{ev.id}</span>
                           </td>
                           <td>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <Link
-                                to={`/events/${ev.id}`}
-                                style={{ color: 'var(--text-h)', fontWeight: 600, textDecoration: 'none' }}
-                                title="View event details"
-                              >
-                                {ev.title}
-                              </Link>
-                              <span className="badge badge-warning" style={{ alignSelf: 'flex-start', marginTop: '0.2rem' }}>
-                                PENDING
-                              </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                              {ev.imageUrl && (
+                                <img
+                                  src={ev.imageUrl}
+                                  alt=""
+                                  style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }}
+                                />
+                              )}
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Link
+                                  to={`/events/${ev.id}`}
+                                  style={{ color: 'var(--text-h)', fontWeight: 600, textDecoration: 'none' }}
+                                  title="View event details"
+                                >
+                                  {ev.title}
+                                </Link>
+                                <span className="badge badge-warning" style={{ alignSelf: 'flex-start', marginTop: '0.2rem' }}>
+                                  PENDING
+                                </span>
+                              </div>
                             </div>
                           </td>
                           <td>
@@ -1289,12 +1298,21 @@ export default function AdminDashboardPage() {
                           <span className="badge badge-secondary">#{ev.id}</span>
                         </td>
                         <td>
-                          <Link
-                            to={`/events/${ev.id}`}
-                            style={{ color: 'var(--text-h)', fontWeight: 600, textDecoration: 'none' }}
-                          >
-                            {ev.title}
-                          </Link>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            {ev.imageUrl && (
+                              <img
+                                src={ev.imageUrl}
+                                alt=""
+                                style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }}
+                              />
+                            )}
+                            <Link
+                              to={`/events/${ev.id}`}
+                              style={{ color: 'var(--text-h)', fontWeight: 600, textDecoration: 'none' }}
+                            >
+                              {ev.title}
+                            </Link>
+                          </div>
                         </td>
                         <td>
                           <span className="badge badge-accent">
@@ -1355,6 +1373,11 @@ export default function AdminDashboardPage() {
                 <p style={{ margin: '0 0 0.5rem', color: 'var(--text)' }}>
                   Are you sure you want to approve this event?
                 </p>
+                {approveModalEvent.imageUrl && (
+                  <div style={{ maxHeight: '160px', overflow: 'hidden', borderRadius: '6px', marginBottom: '0.75rem', border: '1px solid var(--border)' }}>
+                    <img src={approveModalEvent.imageUrl} alt={approveModalEvent.title} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
+                  </div>
+                )}
                 <div style={{ background: 'var(--code-bg)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem' }}>
                   <strong>{approveModalEvent.title}</strong> (ID: #{approveModalEvent.id})
                   <br />
