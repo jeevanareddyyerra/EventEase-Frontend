@@ -11,8 +11,35 @@ export default function LoginPage() {
   const { login, isAuthenticated, user } = useAuth()
 
   // Safely compute destination preventing loops back to /login or /signup
+  // Safely compute destination preventing loops back to /login or /signup
   const rawFrom = location.state?.from
   const computeDestination = (role) => {
+    const normalizedRole = role ? String(role).toUpperCase() : ''
+
+    // If authenticated user is an ADMIN, always route to /admin/dashboard
+    // unless rawFrom is specifically an /admin sub-route
+    if (normalizedRole === 'ADMIN') {
+      if (rawFrom) {
+        const fromPath = typeof rawFrom === 'string' ? rawFrom : rawFrom.pathname
+        if (fromPath && fromPath.startsWith('/admin') && fromPath !== '/login' && fromPath !== '/signup') {
+          return typeof rawFrom === 'string' ? rawFrom : `${rawFrom.pathname}${rawFrom.search || ''}`
+        }
+      }
+      return '/admin/dashboard'
+    }
+
+    // If authenticated user is an ORGANIZER, route to /organizer/dashboard
+    // unless rawFrom is specifically an /organizer sub-route
+    if (normalizedRole === 'ORGANIZER') {
+      if (rawFrom) {
+        const fromPath = typeof rawFrom === 'string' ? rawFrom : rawFrom.pathname
+        if (fromPath && fromPath.startsWith('/organizer') && fromPath !== '/login' && fromPath !== '/signup') {
+          return typeof rawFrom === 'string' ? rawFrom : `${rawFrom.pathname}${rawFrom.search || ''}`
+        }
+      }
+      return '/organizer/dashboard'
+    }
+
     if (rawFrom) {
       if (typeof rawFrom === 'string' && rawFrom !== '/login' && rawFrom !== '/signup') {
         return rawFrom
@@ -21,12 +48,7 @@ export default function LoginPage() {
         return `${rawFrom.pathname}${rawFrom.search || ''}`
       }
     }
-    if (role === 'ORGANIZER') {
-      return '/organizer/dashboard'
-    }
-    if (role === 'ADMIN') {
-      return '/admin/dashboard'
-    }
+
     return '/home'
   }
 
@@ -146,7 +168,7 @@ export default function LoginPage() {
       const targetDestination = computeDestination(authData?.role)
       redirectTimeoutRef.current = setTimeout(() => {
         navigate(targetDestination, { replace: true })
-      }, 700)
+      }, 200)
     } catch (err) {
       // Map field-level backend validation errors if provided
       if (err?.validationErrors) {

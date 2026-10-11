@@ -1,4 +1,4 @@
-export { apiClient, API_BASE_URL, DEFAULT_BASE_URL } from './client.js'
+export { apiClient, API_BASE_URL, DEFAULT_BASE_URL, setAuthHeader } from './client.js'
 export { signup, login, authApi } from './authApi.js'
 export {
   getAllEvents,

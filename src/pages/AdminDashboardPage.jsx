@@ -18,7 +18,7 @@ import {
 import { formatDate, formatTimeRange, formatDateTime, formatFriendlyRole } from '../utils/formatters'
 
 export default function AdminDashboardPage() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, isAuthenticated } = useAuth()
 
   // Tab navigation: 'PENDING_EVENTS' | 'ORGANIZER_REQUESTS' | 'USERS' | 'ALL_EVENTS'
   const [activeTab, setActiveTab] = useState('PENDING_EVENTS')
@@ -116,6 +116,7 @@ export default function AdminDashboardPage() {
 
   // Load platform summary
   useEffect(() => {
+    if (!isAuthenticated) return
     let isMounted = true
 
     getPlatformSummary()
@@ -137,10 +138,11 @@ export default function AdminDashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [summaryRefreshKey])
+  }, [summaryRefreshKey, isAuthenticated])
 
   // Load pending events queue
   useEffect(() => {
+    if (!isAuthenticated) return
     let isMounted = true
 
     getPendingEvents()
@@ -164,11 +166,11 @@ export default function AdminDashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [pendingRefreshKey])
+  }, [pendingRefreshKey, isAuthenticated])
 
   // Fetch Users Directory when USERS tab is active
   useEffect(() => {
-    if (activeTab !== 'USERS') return
+    if (!isAuthenticated || activeTab !== 'USERS') return
     let isMounted = true
 
     getAllUsers()
@@ -190,11 +192,11 @@ export default function AdminDashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [activeTab, usersRefreshKey])
+  }, [activeTab, usersRefreshKey, isAuthenticated])
 
   // Fetch All Events when ALL_EVENTS tab is active
   useEffect(() => {
-    if (activeTab !== 'ALL_EVENTS') return
+    if (!isAuthenticated || activeTab !== 'ALL_EVENTS') return
     let isMounted = true
 
     getAllEvents({ size: 50 })
@@ -218,10 +220,11 @@ export default function AdminDashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [activeTab, allEventsRefreshKey])
+  }, [activeTab, allEventsRefreshKey, isAuthenticated])
 
   // Fetch Organizer Requests when ORGANIZER_REQUESTS tab is active or on initial/refresh load
   useEffect(() => {
+    if (!isAuthenticated) return
     let isMounted = true
 
     getOrganizerRequests(organizerStatusFilter === 'ALL' ? undefined : organizerStatusFilter)
@@ -243,7 +246,7 @@ export default function AdminDashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [organizerStatusFilter, organizerRefreshKey])
+  }, [organizerStatusFilter, organizerRefreshKey, isAuthenticated])
 
   // Organizer Approval Action
   const handleApproveOrganizer = async (applicant) => {

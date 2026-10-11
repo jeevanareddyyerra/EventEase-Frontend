@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AuthContext } from './auth-context.js'
 import { login as loginApi } from '../api/authApi.js'
+import { setAuthHeader } from '../api/client.js'
 import {
   getToken,
   setToken,
@@ -39,6 +40,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const handleSessionExpired = () => {
       clearAuthSession()
+      setAuthHeader(null)
       setUser(null)
     }
 
@@ -107,6 +109,7 @@ export function AuthProvider({ children }) {
         organizerStatus,
       }
       setStoredUser(userProfile)
+      setAuthHeader(token)
 
       // Update state
       setUser(userProfile)
@@ -131,6 +134,7 @@ export function AuthProvider({ children }) {
    */
   const logout = useCallback(() => {
     clearAuthSession()
+    setAuthHeader(null)
     setUser(null)
   }, [])
 

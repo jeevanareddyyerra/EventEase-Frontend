@@ -32,6 +32,44 @@ export const apiClient = axios.create({
   timeout: 60000,
 })
 
+/**
+ * Safely update or remove default Authorization header on apiClient.
+ * @param {string | null | undefined} token
+ */
+export const setAuthHeader = (token) => {
+  const authVal = token ? `Bearer ${token}` : null
+  if (!apiClient.defaults.headers) {
+    apiClient.defaults.headers = {}
+  }
+
+  if (typeof apiClient.defaults.headers.set === 'function') {
+    if (authVal) {
+      apiClient.defaults.headers.set('Authorization', authVal)
+    } else {
+      apiClient.defaults.headers.delete('Authorization')
+      apiClient.defaults.headers.delete('authorization')
+    }
+  }
+
+  if (!apiClient.defaults.headers.common) {
+    apiClient.defaults.headers.common = {}
+  }
+
+  if (authVal) {
+    apiClient.defaults.headers.common['Authorization'] = authVal
+    apiClient.defaults.headers['Authorization'] = authVal
+  } else {
+    delete apiClient.defaults.headers.common['Authorization']
+    delete apiClient.defaults.headers['Authorization']
+  }
+}
+
+// Initialize default Authorization header if token already exists in localStorage
+const initialStoredToken = getToken()
+if (initialStoredToken) {
+  setAuthHeader(initialStoredToken)
+}
+
 // Request interceptor: attach stored JWT as Bearer token on protected endpoints
 apiClient.interceptors.request.use(
   (config) => {
@@ -41,11 +79,22 @@ apiClient.interceptors.request.use(
     )
 
     if (token && !isAuthEndpoint) {
+      const authHeader = `Bearer ${token}`
       if (config.headers && typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', `Bearer ${token}`)
-      } else {
-        config.headers = config.headers || {}
-        config.headers.Authorization = `Bearer ${token}`
+        config.headers.set('Authorization', authHeader)
+      }
+      config.headers = config.headers || {}
+      config.headers.Authorization = authHeader
+      config.headers['authorization'] = authHeader
+      setAuthHeader(token)
+    } else if (isAuthEndpoint) {
+      if (config.headers && typeof config.headers.delete === 'function') {
+        config.headers.delete('Authorization')
+        config.headers.delete('authorization')
+      }
+      if (config.headers) {
+        delete config.headers.Authorization
+        delete config.headers.authorization
       }
     }
     return config
@@ -78,6 +127,7 @@ apiClient.interceptors.response.use(
 
     if (formattedError.status === 401 && hadAuthHeader && !isAuthEndpoint) {
       removeToken()
+      setAuthHeader(null)
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('eventease:auth:session-expired'))
       }

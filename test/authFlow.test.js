@@ -1,6 +1,6 @@
 import test, { describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { apiClient } from '../src/api/client.js'
+import { apiClient, setAuthHeader } from '../src/api/client.js'
 import { login, signup } from '../src/api/authApi.js'
 import {
   getToken,
@@ -634,8 +634,30 @@ describe('Authentication Flow & Token Storage Verification', () => {
     assert.deepEqual(getStoredUser(), profile2)
   })
 
-  test('LoginPage destination resolver redirects ORGANIZER to /organizer/dashboard and USER to /home', () => {
+  test('LoginPage destination resolver redirects ADMIN to /admin/dashboard and ORGANIZER to /organizer/dashboard regardless of non-role rawFrom', () => {
     const computeDestination = (role, rawFrom) => {
+      const normalizedRole = role ? String(role).toUpperCase() : ''
+
+      if (normalizedRole === 'ADMIN') {
+        if (rawFrom) {
+          const fromPath = typeof rawFrom === 'string' ? rawFrom : rawFrom.pathname
+          if (fromPath && fromPath.startsWith('/admin') && fromPath !== '/login' && fromPath !== '/signup') {
+            return typeof rawFrom === 'string' ? rawFrom : `${rawFrom.pathname}${rawFrom.search || ''}`
+          }
+        }
+        return '/admin/dashboard'
+      }
+
+      if (normalizedRole === 'ORGANIZER') {
+        if (rawFrom) {
+          const fromPath = typeof rawFrom === 'string' ? rawFrom : rawFrom.pathname
+          if (fromPath && fromPath.startsWith('/organizer') && fromPath !== '/login' && fromPath !== '/signup') {
+            return typeof rawFrom === 'string' ? rawFrom : `${rawFrom.pathname}${rawFrom.search || ''}`
+          }
+        }
+        return '/organizer/dashboard'
+      }
+
       if (rawFrom) {
         if (typeof rawFrom === 'string' && rawFrom !== '/login' && rawFrom !== '/signup') {
           return rawFrom
@@ -644,37 +666,59 @@ describe('Authentication Flow & Token Storage Verification', () => {
           return `${rawFrom.pathname}${rawFrom.search || ''}`
         }
       }
-      if (role === 'ORGANIZER') {
-        return '/organizer/dashboard'
-      }
-      if (role === 'ADMIN') {
-        return '/admin/dashboard'
-      }
+
       return '/home'
     }
 
-    // Default redirects by role
-    assert.equal(computeDestination('ORGANIZER'), '/organizer/dashboard')
+    // Role redirection defaults
     assert.equal(computeDestination('ADMIN'), '/admin/dashboard')
+    assert.equal(computeDestination('ORGANIZER'), '/organizer/dashboard')
     assert.equal(computeDestination('USER'), '/home')
 
-    // Preserves explicit destination when user was attempting to reach a specific page
-    assert.equal(computeDestination('ORGANIZER', '/events/42'), '/events/42')
+    // ADMIN always routes to /admin/dashboard even if redirected from /events or /
+    assert.equal(computeDestination('ADMIN', '/events'), '/admin/dashboard')
+    assert.equal(computeDestination('ADMIN', '/'), '/admin/dashboard')
+    assert.equal(computeDestination('ADMIN', { pathname: '/events' }), '/admin/dashboard')
+
+    // ADMIN preserves specific admin subroutes
+    assert.equal(computeDestination('ADMIN', '/admin/users'), '/admin/users')
+    assert.equal(computeDestination('ADMIN', { pathname: '/admin/events', search: '?status=PENDING' }), '/admin/events?status=PENDING')
+
+    // ORGANIZER always routes to /organizer/dashboard even if redirected from /events
+    assert.equal(computeDestination('ORGANIZER', '/events'), '/organizer/dashboard')
+    assert.equal(computeDestination('ORGANIZER', '/admin/dashboard'), '/organizer/dashboard')
+    assert.equal(computeDestination('ORGANIZER', '/organizer/events/new'), '/organizer/events/new')
+
+    // USER preserves legitimate non-auth destinations
+    assert.equal(computeDestination('USER', '/events/42'), '/events/42')
     assert.equal(computeDestination('USER', '/assistant'), '/assistant')
 
     // Prevents redirect loops
+    assert.equal(computeDestination('ADMIN', '/login'), '/admin/dashboard')
     assert.equal(computeDestination('ORGANIZER', '/login'), '/organizer/dashboard')
+    assert.equal(computeDestination('USER', '/login'), '/home')
     assert.equal(computeDestination('USER', '/signup'), '/home')
   })
 
+  test('setAuthHeader synchronizes Authorization default headers on apiClient', () => {
+    setAuthHeader('mock-admin-token-123')
+    assert.equal(apiClient.defaults.headers.common['Authorization'], 'Bearer mock-admin-token-123')
+    assert.equal(apiClient.defaults.headers['Authorization'], 'Bearer mock-admin-token-123')
+
+    setAuthHeader(null)
+    assert.equal(apiClient.defaults.headers.common['Authorization'], undefined)
+    assert.equal(apiClient.defaults.headers['Authorization'], undefined)
+  })
+
   test('LoginPage redirection logic resolves destination safely with user context', () => {
-    const user = { id: 1, role: 'ORGANIZER' }
+    const user = { id: 1, role: 'ADMIN' }
     const computeDestination = (role) => {
-      if (role === 'ORGANIZER') return '/organizer/dashboard'
-      if (role === 'ADMIN') return '/admin/dashboard'
+      const normalizedRole = role ? String(role).toUpperCase() : ''
+      if (normalizedRole === 'ADMIN') return '/admin/dashboard'
+      if (normalizedRole === 'ORGANIZER') return '/organizer/dashboard'
       return '/home'
     }
-    assert.equal(computeDestination(user?.role), '/organizer/dashboard')
+    assert.equal(computeDestination(user?.role), '/admin/dashboard')
     assert.equal(computeDestination(undefined), '/home')
   })
 })
