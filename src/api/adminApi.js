@@ -38,7 +38,12 @@ export const getPlatformSummary = () => {
  * @returns {Promise<import('axios').AxiosResponse>}
  */
 export const getPendingEvents = (params = {}) => {
-  const cleanParams = { status: 'PENDING' }
+  const cleanParams = {
+    status: 'PENDING',
+    size: 50,
+    sortBy: 'createdAt',
+    direction: 'desc',
+  }
   if (params && typeof params === 'object') {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '' && v !== 'ALL') {
