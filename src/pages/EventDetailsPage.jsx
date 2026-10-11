@@ -153,7 +153,8 @@ export default function EventDetailsPage() {
   const isVolunteerCapacityFull =
     volunteerReq?.requiredCount != null && volunteerCount >= volunteerReq.requiredCount
 
-  const isEventOpenForRegistration = event?.status === 'PUBLISHED'
+  const isEventOpenForRegistration =
+    event?.status === 'PUBLISHED' || event?.status === 'APPROVED'
 
   // Participant Registration Submission
   const handleRegister = async (type) => {
@@ -758,8 +759,13 @@ export default function EventDetailsPage() {
                     <div className="alert alert-warning" style={{ margin: 0 }}>
                       <span className="alert-icon" aria-hidden="true">ℹ</span>
                       <span>
-                        Registration is unavailable. Event status is{' '}
-                        <strong>{event.status}</strong>.
+                        {event?.status === 'PENDING'
+                          ? 'Registration is unavailable. This event is pending administrator approval.'
+                          : event?.status === 'COMPLETED'
+                          ? 'Registration is closed. This event has ended.'
+                          : event?.status === 'CANCELLED'
+                          ? 'Registration is unavailable. This event has been cancelled.'
+                          : `Registration is unavailable. Event status is ${event?.status || 'not open'}.`}
                       </span>
                     </div>
                   )}
