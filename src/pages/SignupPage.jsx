@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { signup } from '../api'
 
 export default function SignupPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const redirectTimeoutRef = useRef(null)
 
   const [formData, setFormData] = useState({
@@ -121,6 +122,7 @@ export default function SignupPage() {
           replace: true,
           state: {
             message: 'Registration successful! Please sign in with your email and password.',
+            from: location.state?.from,
           },
         })
       }, 1400)
@@ -279,7 +281,11 @@ export default function SignupPage() {
           <div className="auth-footer">
             <p className="auth-switch-text">
               Already have an account?{' '}
-              <Link to="/login" className="auth-link">
+              <Link
+                to="/login"
+                state={location.state?.from ? { from: location.state.from } : undefined}
+                className="auth-link"
+              >
                 Log In
               </Link>
             </p>

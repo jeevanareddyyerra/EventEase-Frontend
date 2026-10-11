@@ -37,8 +37,13 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = getToken()
     if (token) {
-      config.headers = config.headers || {}
-      config.headers.Authorization = `Bearer ${token}`
+      if (config.headers && typeof config.headers.set === 'function') {
+        config.headers.set('Authorization', `Bearer ${token}`)
+      } else {
+        config.headers = config.headers || {}
+        config.headers.Authorization = `Bearer ${token}`
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
     }
     return config
   },
@@ -53,8 +58,19 @@ apiClient.interceptors.response.use(
   (error) => {
     const formattedError = formatApiError(error)
 
-    // Clear stale session on 401 Unauthorized
-    if (formattedError.status === 401) {
+    // Clear stale session on 401 Unauthorized ONLY if:
+    // 1. The request was an authenticated request (carried an Authorization header)
+    // 2. The request was NOT an unauthenticated authentication endpoint (e.g. login/signup failure)
+    const authVal = error?.config?.headers?.Authorization
+      ? error.config.headers.Authorization
+      : (typeof error?.config?.headers?.get === 'function' ? error.config.headers.get('Authorization') : null)
+    const hadAuthHeader = Boolean(authVal)
+    const isAuthEndpoint = Boolean(
+      error?.config?.url &&
+      (error.config.url.includes('/auth/login') || error.config.url.includes('/auth/signup'))
+    )
+
+    if (formattedError.status === 401 && hadAuthHeader && !isAuthEndpoint) {
       removeToken()
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('eventease:auth:session-expired'))

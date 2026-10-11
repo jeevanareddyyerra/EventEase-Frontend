@@ -80,7 +80,20 @@ export function AuthProvider({ children }) {
     setIsLoading(true)
     try {
       const response = await loginApi(credentials)
-      const { token, userId, name, email, role } = response.data
+      const data = response?.data || {}
+
+      // Defensive token extraction supporting standard backend and wrapper variations
+      const token = data.token || data.accessToken || data.jwt || data.data?.token
+      if (!token || typeof token !== 'string') {
+        throw new Error('Authentication succeeded but no authorization token was received from the server.')
+      }
+
+      // Defensive user field extraction supporting flat response and nested user object
+      const userObj = data.user || data.data?.user || {}
+      const userId = data.userId ?? data.id ?? userObj.userId ?? userObj.id
+      const name = data.name ?? userObj.name ?? ''
+      const email = data.email ?? userObj.email ?? credentials.email
+      const role = (data.role ?? userObj.role ?? 'USER').toUpperCase()
 
       // Save token and profile to localStorage
       setToken(token)
@@ -96,7 +109,15 @@ export function AuthProvider({ children }) {
       // Update state
       setUser(userProfile)
 
-      return response.data
+      return {
+        ...data,
+        token,
+        userId,
+        name,
+        email,
+        role,
+        user: userProfile,
+      }
     } finally {
       setIsLoading(false)
     }

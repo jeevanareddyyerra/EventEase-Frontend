@@ -8,7 +8,21 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const redirectTimeoutRef = useRef(null)
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
+
+  // Safely compute destination preventing loops back to /login or /signup
+  const rawFrom = location.state?.from
+  const destination = (() => {
+    if (rawFrom) {
+      if (typeof rawFrom === 'string' && rawFrom !== '/login' && rawFrom !== '/signup') {
+        return rawFrom
+      }
+      if (rawFrom.pathname && rawFrom.pathname !== '/login' && rawFrom.pathname !== '/signup') {
+        return `${rawFrom.pathname}${rawFrom.search || ''}`
+      }
+    }
+    return '/home'
+  })()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,6 +47,13 @@ export default function LoginPage() {
     return null
   })
   const [isLoading, setIsLoading] = useState(false)
+
+  // Redirect immediately if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate(destination, { replace: true })
+    }
+  }, [isAuthenticated, isLoading, navigate, destination])
 
   useEffect(() => {
     return () => {
@@ -113,13 +134,6 @@ export default function LoginPage() {
         type: 'success',
         message: `Welcome back, ${authData?.name || 'User'}! Redirecting...`,
       })
-
-      // Preserve and return to originally requested location, default to '/'
-      const destination = location.state?.from?.pathname
-        ? `${location.state.from.pathname}${location.state.from.search || ''}`
-        : typeof location.state?.from === 'string'
-        ? location.state.from
-        : '/home'
 
       // Brief delay so user sees confirmation feedback before redirection
       redirectTimeoutRef.current = setTimeout(() => {
@@ -217,7 +231,11 @@ export default function LoginPage() {
           <div className="auth-footer">
             <p className="auth-switch-text">
               Don&apos;t have an account?{' '}
-              <Link to="/signup" className="auth-link">
+              <Link
+                to="/signup"
+                state={rawFrom ? { from: rawFrom } : undefined}
+                className="auth-link"
+              >
                 Sign Up
               </Link>
             </p>
