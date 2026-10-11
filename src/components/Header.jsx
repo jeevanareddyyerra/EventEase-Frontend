@@ -39,7 +39,7 @@ export default function Header() {
               to="/events"
               className={`nav-link ${location.pathname.startsWith('/events') ? 'nav-link-active' : ''}`}
             >
-              Events
+              Explore Events
             </Link>
             <Link
               to="/assistant"
@@ -113,13 +113,19 @@ export default function Header() {
               to="/events"
               className={`nav-link ${location.pathname.startsWith('/events') ? 'nav-link-active' : ''}`}
             >
-              Discover Events
+              Explore Events
+            </Link>
+            <Link
+              to="/assistant"
+              className={`nav-link ${location.pathname.startsWith('/assistant') ? 'nav-link-active' : ''}`}
+            >
+              AI Assistant
             </Link>
             <Link
               to="/login"
               className={`nav-link ${location.pathname === '/login' ? 'nav-link-active' : ''}`}
             >
-              Log In
+              Login
             </Link>
             <Link
               to="/signup"
@@ -129,8 +135,6 @@ export default function Header() {
             </Link>
           </>
         )}
-
-        <span className="badge badge-accent">Phase 11H</span>
       </nav>
     </header>
   )
