@@ -94,6 +94,7 @@ export function AuthProvider({ children }) {
       const name = data.name ?? userObj.name ?? ''
       const email = data.email ?? userObj.email ?? credentials.email
       const role = (data.role ?? userObj.role ?? 'USER').toUpperCase()
+      const organizerStatus = (data.organizerStatus ?? userObj.organizerStatus ?? 'NONE').toUpperCase()
 
       // Save token and profile to localStorage
       setToken(token)
@@ -103,6 +104,7 @@ export function AuthProvider({ children }) {
         name,
         email,
         role,
+        organizerStatus,
       }
       setStoredUser(userProfile)
 
@@ -116,6 +118,7 @@ export function AuthProvider({ children }) {
         name,
         email,
         role,
+        organizerStatus,
         user: userProfile,
       }
     } finally {

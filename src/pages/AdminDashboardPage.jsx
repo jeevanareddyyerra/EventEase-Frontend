@@ -11,13 +11,16 @@ import {
   getAllUsers,
   deleteUser,
   getAllEvents,
+  getOrganizerRequests,
+  approveOrganizerRequest,
+  rejectOrganizerRequest,
 } from '../api'
 import { formatDate, formatTimeRange, formatDateTime, formatFriendlyRole } from '../utils/formatters'
 
 export default function AdminDashboardPage() {
   const { user: currentUser } = useAuth()
 
-  // Tab navigation: 'PENDING_EVENTS' | 'USERS' | 'ALL_EVENTS'
+  // Tab navigation: 'PENDING_EVENTS' | 'ORGANIZER_REQUESTS' | 'USERS' | 'ALL_EVENTS'
   const [activeTab, setActiveTab] = useState('PENDING_EVENTS')
 
   // Platform Metrics
@@ -32,6 +35,17 @@ export default function AdminDashboardPage() {
   const [pendingError, setPendingError] = useState(null)
   const [pendingSearch, setPendingSearch] = useState('')
   const [pendingRefreshKey, setPendingRefreshKey] = useState(0)
+
+  // Organizer Requests Queue
+  const [organizerRequests, setOrganizerRequests] = useState([])
+  const [isLoadingOrganizerRequests, setIsLoadingOrganizerRequests] = useState(true)
+  const [organizerRequestsError, setOrganizerRequestsError] = useState(null)
+  const [organizerSearch, setOrganizerSearch] = useState('')
+  const [organizerStatusFilter, setOrganizerStatusFilter] = useState('ALL')
+  const [organizerRefreshKey, setOrganizerRefreshKey] = useState(0)
+  const [approveModalOrganizer, setApproveModalOrganizer] = useState(null)
+  const [rejectModalOrganizer, setRejectModalOrganizer] = useState(null)
+  const [processingOrganizerId, setProcessingOrganizerId] = useState(null)
 
   // Users Governance Directory
   const [users, setUsers] = useState([])
@@ -61,8 +75,10 @@ export default function AdminDashboardPage() {
   const handleRefreshAll = () => {
     setIsLoadingSummary(true)
     setIsLoadingPending(true)
+    setIsLoadingOrganizerRequests(true)
     setSummaryRefreshKey((k) => k + 1)
     setPendingRefreshKey((k) => k + 1)
+    setOrganizerRefreshKey((k) => k + 1)
     if (activeTab === 'USERS') {
       setIsLoadingUsers(true)
       setUsersRefreshKey((k) => k + 1)
@@ -81,6 +97,11 @@ export default function AdminDashboardPage() {
   const handleRefreshPending = () => {
     setIsLoadingPending(true)
     setPendingRefreshKey((k) => k + 1)
+  }
+
+  const handleRefreshOrganizerRequests = () => {
+    setIsLoadingOrganizerRequests(true)
+    setOrganizerRefreshKey((k) => k + 1)
   }
 
   const handleRefreshUsers = () => {
@@ -199,6 +220,65 @@ export default function AdminDashboardPage() {
     }
   }, [activeTab, allEventsRefreshKey])
 
+  // Fetch Organizer Requests when ORGANIZER_REQUESTS tab is active or on initial/refresh load
+  useEffect(() => {
+    let isMounted = true
+
+    getOrganizerRequests(organizerStatusFilter === 'ALL' ? undefined : organizerStatusFilter)
+      .then((res) => {
+        if (isMounted) {
+          setOrganizerRequests(Array.isArray(res.data) ? res.data : [])
+          setOrganizerRequestsError(null)
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setOrganizerRequestsError(err?.message || 'Failed to load organizer requests.')
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingOrganizerRequests(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [organizerStatusFilter, organizerRefreshKey])
+
+  // Organizer Approval Action
+  const handleApproveOrganizer = async (applicant) => {
+    setProcessingOrganizerId(applicant.id)
+    setActionError(null)
+    setActionSuccess(null)
+    try {
+      await approveOrganizerRequest(applicant.id)
+      setActionSuccess(`Organizer application for "${applicant.name}" (${applicant.email}) has been APPROVED.`)
+      setApproveModalOrganizer(null)
+      handleRefreshAll()
+    } catch (err) {
+      setActionError(err?.message || `Failed to approve organizer application for #${applicant.id}.`)
+    } finally {
+      setProcessingOrganizerId(null)
+    }
+  }
+
+  // Organizer Rejection Action
+  const handleRejectOrganizer = async (applicant) => {
+    setProcessingOrganizerId(applicant.id)
+    setActionError(null)
+    setActionSuccess(null)
+    try {
+      await rejectOrganizerRequest(applicant.id)
+      setActionSuccess(`Organizer application for "${applicant.name}" (${applicant.email}) has been DECLINED.`)
+      setRejectModalOrganizer(null)
+      handleRefreshAll()
+    } catch (err) {
+      setActionError(err?.message || `Failed to decline organizer application for #${applicant.id}.`)
+    } finally {
+      setProcessingOrganizerId(null)
+    }
+  }
+
   // Event Approval Action
   const handleApproveEvent = async (event) => {
     setProcessingEventId(event.id)
@@ -269,6 +349,26 @@ export default function AdminDashboardPage() {
       return title.includes(term) || venue.includes(term) || category.includes(term) || idStr.includes(term)
     })
   }, [pendingEvents, pendingSearch])
+
+  // Filtered Organizer Requests
+  const filteredOrganizerRequests = useMemo(() => {
+    return organizerRequests.filter((req) => {
+      if (!organizerSearch.trim()) return true
+      const term = organizerSearch.toLowerCase().trim()
+      const name = (req.name || '').toLowerCase()
+      const email = (req.email || '').toLowerCase()
+      const phone = (req.phone || '').toLowerCase()
+      const idStr = String(req.id || '')
+      return name.includes(term) || email.includes(term) || phone.includes(term) || idStr.includes(term)
+    })
+  }, [organizerRequests, organizerSearch])
+
+  const pendingOrganizerCount = useMemo(() => {
+    if (summary?.pendingOrganizers !== undefined && summary?.pendingOrganizers !== null) {
+      return summary.pendingOrganizers
+    }
+    return organizerRequests.filter((r) => r.organizerStatus === 'PENDING').length
+  }, [summary, organizerRequests])
 
   // Filtered Users
   const filteredUsers = useMemo(() => {
@@ -547,6 +647,20 @@ export default function AdminDashboardPage() {
 
           <button
             type="button"
+            className={`admin-tab-btn ${activeTab === 'ORGANIZER_REQUESTS' ? 'admin-tab-btn-active' : ''}`}
+            onClick={() => setActiveTab('ORGANIZER_REQUESTS')}
+          >
+            <span>🏢 Organizer Applications</span>
+            <span
+              className={`badge ${pendingOrganizerCount > 0 ? 'badge-warning' : 'badge-secondary'}`}
+              style={{ fontSize: '0.75rem', padding: '0.1rem 0.45rem' }}
+            >
+              {pendingOrganizerCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
             className={`admin-tab-btn ${activeTab === 'USERS' ? 'admin-tab-btn-active' : ''}`}
             onClick={() => setActiveTab('USERS')}
           >
@@ -737,6 +851,201 @@ export default function AdminDashboardPage() {
                         </tr>
                       )
                     })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: ORGANIZER APPLICATIONS QUEUE                                         */}
+        {/* ========================================================================= */}
+        {activeTab === 'ORGANIZER_REQUESTS' && (
+          <section aria-label="Organizer Applications Queue">
+            <div className="events-filter-row" style={{ marginBottom: '1.25rem' }}>
+              <div className="events-search-wrapper" style={{ flex: '1 1 260px' }}>
+                <input
+                  type="text"
+                  className="filter-input"
+                  placeholder="Search applicants by name, email, or phone..."
+                  value={organizerSearch}
+                  onChange={(e) => setOrganizerSearch(e.target.value)}
+                  aria-label="Search organizer applications"
+                />
+              </div>
+
+              <div className="filter-select-wrapper" style={{ minWidth: '170px' }}>
+                <select
+                  className="filter-select"
+                  value={organizerStatusFilter}
+                  onChange={(e) => {
+                    setIsLoadingOrganizerRequests(true)
+                    setOrganizerStatusFilter(e.target.value)
+                  }}
+                  aria-label="Filter by application status"
+                >
+                  <option value="ALL">All Application Statuses</option>
+                  <option value="PENDING">Pending Review</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Declined</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleRefreshOrganizerRequests}
+                  disabled={isLoadingOrganizerRequests}
+                >
+                  🔄 Refresh Requests
+                </button>
+              </div>
+            </div>
+
+            {isLoadingOrganizerRequests ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text)' }}>
+                Loading organizer applications...
+              </div>
+            ) : organizerRequestsError ? (
+              <div className="alert alert-error">
+                <span>{organizerRequestsError}</span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-small"
+                  style={{ marginLeft: '1rem' }}
+                  onClick={handleRefreshOrganizerRequests}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : filteredOrganizerRequests.length === 0 ? (
+              <div className="empty-state-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
+                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '0.75rem' }}>
+                  🏢
+                </span>
+                <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-h)' }}>
+                  {organizerSearch
+                    ? 'No matching organizer applications'
+                    : organizerStatusFilter === 'PENDING'
+                    ? 'No Pending Organizer Requests'
+                    : 'No Organizer Applications Found'}
+                </h3>
+                <p style={{ color: 'var(--text)', margin: 0, maxWidth: '460px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  {organizerSearch
+                    ? `No applications match "${organizerSearch}". Try clearing your search.`
+                    : 'When users register with an Organizer account type, their verification requests will appear here for administrator review.'}
+                </p>
+                {organizerSearch && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ marginTop: '1rem' }}
+                    onClick={() => setOrganizerSearch('')}
+                  >
+                    Clear Search
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="roster-table-container">
+                <table className="roster-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">Applicant</th>
+                      <th scope="col">Contact</th>
+                      <th scope="col">Account Role</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Applied Date</th>
+                      <th scope="col" style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrganizerRequests.map((applicant) => (
+                      <tr key={applicant.id}>
+                        <td>
+                          <span style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>
+                            #{applicant.id}
+                          </span>
+                        </td>
+                        <td>
+                          <strong style={{ color: 'var(--text-h)', display: 'block' }}>
+                            {applicant.name}
+                          </strong>
+                        </td>
+                        <td>
+                          <span style={{ display: 'block', fontSize: '0.85rem' }}>
+                            {applicant.email}
+                          </span>
+                          {applicant.phone && (
+                            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text)' }}>
+                              📞 {applicant.phone}
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`badge ${getRoleBadgeClass(applicant.role)}`}>
+                            {applicant.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              applicant.organizerStatus === 'APPROVED'
+                                ? 'badge-success'
+                                : applicant.organizerStatus === 'REJECTED'
+                                ? 'badge-error'
+                                : 'badge-warning'
+                            }`}
+                          >
+                            {applicant.organizerStatus === 'APPROVED'
+                              ? 'Approved'
+                              : applicant.organizerStatus === 'REJECTED'
+                              ? 'Declined'
+                              : 'Pending Review'}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
+                            {applicant.createdAt ? formatDate(applicant.createdAt) : '—'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                            {applicant.organizerStatus !== 'APPROVED' && (
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-small"
+                                onClick={() => setApproveModalOrganizer(applicant)}
+                                disabled={processingOrganizerId === applicant.id}
+                                title="Approve as Event Organizer"
+                              >
+                                ✓ Approve
+                              </button>
+                            )}
+                            {applicant.organizerStatus !== 'REJECTED' && (
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-small"
+                                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                                onClick={() => setRejectModalOrganizer(applicant)}
+                                disabled={processingOrganizerId === applicant.id}
+                                title="Decline organizer application"
+                              >
+                                ✕ Decline
+                              </button>
+                            )}
+                            {applicant.organizerStatus === 'APPROVED' && (
+                              <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600 }}>
+                                Active Organizer
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1179,6 +1488,112 @@ export default function AdminDashboardPage() {
                   disabled={isDeletingUser}
                 >
                   {isDeletingUser ? 'Deleting...' : 'Delete User'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* APPROVE ORGANIZER APPLICATION MODAL */}
+        {approveModalOrganizer && (
+          <div className="admin-modal-overlay" role="dialog" aria-modal="true">
+            <div className="admin-modal">
+              <div className="admin-modal-header">
+                <h3 className="admin-modal-title" style={{ color: 'var(--text-h)' }}>
+                  Approve Organizer Application
+                </h3>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-small"
+                  onClick={() => setApproveModalOrganizer(null)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', color: 'var(--text)' }}>
+                  Are you sure you want to approve this applicant as an Event Organizer?
+                </p>
+                <div style={{ background: 'var(--code-bg)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+                  <strong>{approveModalOrganizer.name}</strong> ({approveModalOrganizer.email})
+                  <br />
+                  <span style={{ color: 'var(--text)', fontSize: '0.85rem' }}>
+                    User ID: #{approveModalOrganizer.id} &bull; Current Role: {approveModalOrganizer.role}
+                  </span>
+                </div>
+                <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: 'var(--text)' }}>
+                  Once approved, their role will be updated to <strong>ORGANIZER</strong>, granting them permission to create and manage campus events and registrations.
+                </p>
+              </div>
+              <div className="admin-modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setApproveModalOrganizer(null)}
+                  disabled={processingOrganizerId === approveModalOrganizer.id}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => handleApproveOrganizer(approveModalOrganizer)}
+                  disabled={processingOrganizerId === approveModalOrganizer.id}
+                >
+                  {processingOrganizerId === approveModalOrganizer.id ? 'Approving...' : 'Confirm Approval'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* REJECT ORGANIZER APPLICATION MODAL */}
+        {rejectModalOrganizer && (
+          <div className="admin-modal-overlay" role="dialog" aria-modal="true">
+            <div className="admin-modal">
+              <div className="admin-modal-header">
+                <h3 className="admin-modal-title" style={{ color: '#ef4444' }}>
+                  Decline Organizer Application
+                </h3>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-small"
+                  onClick={() => setRejectModalOrganizer(null)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', color: 'var(--text)' }}>
+                  Are you sure you want to decline this organizer application?
+                </p>
+                <div style={{ background: 'var(--code-bg)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+                  <strong>{rejectModalOrganizer.name}</strong> ({rejectModalOrganizer.email})
+                  <br />
+                  <span style={{ color: 'var(--text)', fontSize: '0.85rem' }}>
+                    User ID: #{rejectModalOrganizer.id}
+                  </span>
+                </div>
+                <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: 'var(--text)' }}>
+                  The applicant will remain an active Participant with standard attendee privileges and will not be granted event creation rights.
+                </p>
+              </div>
+              <div className="admin-modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setRejectModalOrganizer(null)}
+                  disabled={processingOrganizerId === rejectModalOrganizer.id}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={() => handleRejectOrganizer(rejectModalOrganizer)}
+                  disabled={processingOrganizerId === rejectModalOrganizer.id}
+                >
+                  {processingOrganizerId === rejectModalOrganizer.id ? 'Declining...' : 'Decline Application'}
                 </button>
               </div>
             </div>

@@ -111,6 +111,45 @@ export const updateUser = (id, userData) => {
   return apiClient.put(`/users/${id}`, userData)
 }
 
+/**
+ * Fetch organizer registration requests (ADMIN only).
+ * Endpoint: GET /api/admin/organizer-requests
+ *
+ * @param {string} [status] - Optional filter (PENDING, APPROVED, REJECTED)
+ * @returns {Promise<import('axios').AxiosResponse>}
+ */
+export const getOrganizerRequests = (status) => {
+  const params = {}
+  if (status && status !== 'ALL') {
+    params.status = status
+  }
+  return apiClient.get('/admin/organizer-requests', { params })
+}
+
+/**
+ * Approve an organizer registration request (ADMIN only).
+ * Sets role to ORGANIZER and organizerStatus to APPROVED.
+ * Endpoint: POST /api/admin/organizer-requests/{id}/approve
+ *
+ * @param {number|string} id - User ID
+ * @returns {Promise<import('axios').AxiosResponse>}
+ */
+export const approveOrganizerRequest = (id) => {
+  return apiClient.post(`/admin/organizer-requests/${id}/approve`)
+}
+
+/**
+ * Reject an organizer registration request (ADMIN only).
+ * Sets organizerStatus to REJECTED.
+ * Endpoint: POST /api/admin/organizer-requests/{id}/reject
+ *
+ * @param {number|string} id - User ID
+ * @returns {Promise<import('axios').AxiosResponse>}
+ */
+export const rejectOrganizerRequest = (id) => {
+  return apiClient.post(`/admin/organizer-requests/${id}/reject`)
+}
+
 export const adminApi = {
   getPlatformSummary,
   getPendingEvents,
@@ -119,6 +158,9 @@ export const adminApi = {
   getAllUsers,
   deleteUser,
   updateUser,
+  getOrganizerRequests,
+  approveOrganizerRequest,
+  rejectOrganizerRequest,
 }
 
 export default adminApi

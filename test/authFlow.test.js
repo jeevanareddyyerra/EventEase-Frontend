@@ -545,4 +545,125 @@ describe('Authentication Flow & Token Storage Verification', () => {
     assert.equal(formatFriendlyRole(undefined), 'Participant')
     assert.equal(formatFriendlyRole(''), 'Participant')
   })
+
+  test('authApi.signup includes accountType in payload when provided', async () => {
+    let capturedPayload = null
+    const originalPost = apiClient.post
+    apiClient.post = async (url, payload) => {
+      capturedPayload = payload
+      return { data: { success: true } }
+    }
+
+    try {
+      await signup({
+        name: 'Jane Organizer',
+        email: 'jane@example.com',
+        password: 'password123',
+        phone: '1234567890',
+        accountType: 'ORGANIZER',
+      })
+
+      assert.deepEqual(capturedPayload, {
+        name: 'Jane Organizer',
+        email: 'jane@example.com',
+        password: 'password123',
+        phone: '1234567890',
+        accountType: 'ORGANIZER',
+      })
+
+      await signup({
+        name: 'John Participant',
+        email: 'john@example.com',
+        password: 'password123',
+        accountType: 'PARTICIPANT',
+      })
+
+      assert.deepEqual(capturedPayload, {
+        name: 'John Participant',
+        email: 'john@example.com',
+        password: 'password123',
+        accountType: 'PARTICIPANT',
+      })
+    } finally {
+      apiClient.post = originalPost
+    }
+  })
+
+  test('Login response parser extracts and persists organizerStatus', () => {
+    const parseAuthResponse = (data, credentialsEmail) => {
+      const token = data.token || data.accessToken || data.jwt || data.data?.token
+      const userObj = data.user || data.data?.user || {}
+      const userId = data.userId ?? data.id ?? userObj.userId ?? userObj.id
+      const name = data.name ?? userObj.name ?? ''
+      const email = data.email ?? userObj.email ?? credentialsEmail
+      const role = (data.role ?? userObj.role ?? 'USER').toUpperCase()
+      const organizerStatus = (data.organizerStatus ?? userObj.organizerStatus ?? 'NONE').toUpperCase()
+
+      setToken(token)
+      const userProfile = { id: userId, userId, name, email, role, organizerStatus }
+      setStoredUser(userProfile)
+      return { token, userProfile }
+    }
+
+    const pendingResponse = {
+      token: 'jwt-pending-organizer',
+      userId: 77,
+      name: 'Pending Org',
+      email: 'pending@org.com',
+      role: 'USER',
+      organizerStatus: 'PENDING',
+    }
+
+    const { userProfile: profile1 } = parseAuthResponse(pendingResponse, 'pending@org.com')
+    assert.equal(profile1.role, 'USER')
+    assert.equal(profile1.organizerStatus, 'PENDING')
+    assert.deepEqual(getStoredUser(), profile1)
+
+    const approvedResponse = {
+      token: 'jwt-approved-organizer',
+      userId: 88,
+      name: 'Approved Org',
+      email: 'approved@org.com',
+      role: 'ORGANIZER',
+      organizerStatus: 'APPROVED',
+    }
+
+    const { userProfile: profile2 } = parseAuthResponse(approvedResponse, 'approved@org.com')
+    assert.equal(profile2.role, 'ORGANIZER')
+    assert.equal(profile2.organizerStatus, 'APPROVED')
+    assert.deepEqual(getStoredUser(), profile2)
+  })
+
+  test('LoginPage destination resolver redirects ORGANIZER to /organizer/dashboard and USER to /home', () => {
+    const computeDestination = (role, rawFrom) => {
+      if (rawFrom) {
+        if (typeof rawFrom === 'string' && rawFrom !== '/login' && rawFrom !== '/signup') {
+          return rawFrom
+        }
+        if (rawFrom.pathname && rawFrom.pathname !== '/login' && rawFrom.pathname !== '/signup') {
+          return `${rawFrom.pathname}${rawFrom.search || ''}`
+        }
+      }
+      if (role === 'ORGANIZER') {
+        return '/organizer/dashboard'
+      }
+      if (role === 'ADMIN') {
+        return '/admin/dashboard'
+      }
+      return '/home'
+    }
+
+    // Default redirects by role
+    assert.equal(computeDestination('ORGANIZER'), '/organizer/dashboard')
+    assert.equal(computeDestination('ADMIN'), '/admin/dashboard')
+    assert.equal(computeDestination('USER'), '/home')
+
+    // Preserves explicit destination when user was attempting to reach a specific page
+    assert.equal(computeDestination('ORGANIZER', '/events/42'), '/events/42')
+    assert.equal(computeDestination('USER', '/assistant'), '/assistant')
+
+    // Prevents redirect loops
+    assert.equal(computeDestination('ORGANIZER', '/login'), '/organizer/dashboard')
+    assert.equal(computeDestination('USER', '/signup'), '/home')
+  })
 })

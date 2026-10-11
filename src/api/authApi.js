@@ -16,7 +16,7 @@ import { apiClient } from './client.js'
  *   role: string
  * }>>}
  */
-export const signup = async ({ name, email, password, phone }) => {
+export const signup = async ({ name, email, password, phone, accountType }) => {
   const payload = {
     name: name != null ? name.trim() : '',
     email: email != null ? email.trim() : '',
@@ -25,6 +25,10 @@ export const signup = async ({ name, email, password, phone }) => {
 
   if (phone != null && phone.trim() !== '') {
     payload.phone = phone.trim()
+  }
+
+  if (accountType != null && accountType.trim() !== '') {
+    payload.accountType = accountType.trim()
   }
 
   return apiClient.post('/auth/signup', payload)

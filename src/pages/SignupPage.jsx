@@ -15,6 +15,7 @@ export default function SignupPage() {
     phone: '',
     password: '',
     confirmPassword: '',
+    accountType: 'PARTICIPANT',
   })
 
   const [errors, setErrors] = useState({})
@@ -109,23 +110,30 @@ export default function SignupPage() {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
+        accountType: formData.accountType,
       })
+
+      const isOrganizer = formData.accountType === 'ORGANIZER'
 
       // On successful signup, display success notification and redirect to /login
       setSubmittedStatus({
         type: 'success',
-        message: 'Account created successfully! Redirecting to login...',
+        message: isOrganizer
+          ? 'Account created! Your organizer application is pending review. Redirecting to login...'
+          : 'Account created successfully! Redirecting to login...',
       })
 
       redirectTimeoutRef.current = setTimeout(() => {
         navigate('/login', {
           replace: true,
           state: {
-            message: 'Registration successful! Please sign in with your email and password.',
+            message: isOrganizer
+              ? 'Registration submitted! Your organizer request is under administrator review. You can log in anytime to participate in events.'
+              : 'Registration successful! Please sign in with your email and password.',
             from: location.state?.from,
           },
         })
-      }, 1400)
+      }, 1500)
     } catch (err) {
       // Map backend validation errors to fields
       if (err?.validationErrors) {
@@ -178,6 +186,69 @@ export default function SignupPage() {
           )}
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <div className="form-group">
+              <label className="form-label">
+                Account Type <span className="required">*</span>
+              </label>
+              <div className="account-type-grid" role="radiogroup" aria-label="Account Type">
+                <label
+                  className={`account-type-card ${
+                    formData.accountType === 'PARTICIPANT' ? 'selected' : ''
+                  }`}
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, accountType: 'PARTICIPANT' }))
+                  }
+                >
+                  <div className="account-type-header">
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value="PARTICIPANT"
+                      checked={formData.accountType === 'PARTICIPANT'}
+                      onChange={() =>
+                        setFormData((prev) => ({ ...prev, accountType: 'PARTICIPANT' }))
+                      }
+                      className="account-type-radio"
+                      disabled={isLoading}
+                    />
+                    <span className="account-type-title">Participant</span>
+                  </div>
+                  <p className="account-type-desc">
+                    Browse events, register for sessions, join teams, and receive certificates.
+                  </p>
+                  <span className="account-type-badge">Immediate Access</span>
+                </label>
+
+                <label
+                  className={`account-type-card ${
+                    formData.accountType === 'ORGANIZER' ? 'selected' : ''
+                  }`}
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, accountType: 'ORGANIZER' }))
+                  }
+                >
+                  <div className="account-type-header">
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value="ORGANIZER"
+                      checked={formData.accountType === 'ORGANIZER'}
+                      onChange={() =>
+                        setFormData((prev) => ({ ...prev, accountType: 'ORGANIZER' }))
+                      }
+                      className="account-type-radio"
+                      disabled={isLoading}
+                    />
+                    <span className="account-type-title">Organizer</span>
+                  </div>
+                  <p className="account-type-desc">
+                    Create, coordinate, and manage campus events and registrations.
+                  </p>
+                  <span className="account-type-badge pending-badge">Admin Review Required</span>
+                </label>
+              </div>
+            </div>
+
             <div className="form-group">
               <label htmlFor="signup-name" className="form-label">
                 Full Name <span className="required">*</span>

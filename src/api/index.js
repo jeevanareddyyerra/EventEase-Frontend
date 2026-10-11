@@ -42,6 +42,9 @@ export {
   getPendingEvents,
   approveEvent,
   rejectEvent,
+  getOrganizerRequests,
+  approveOrganizerRequest,
+  rejectOrganizerRequest,
   adminApi,
 } from './adminApi.js'
 export {

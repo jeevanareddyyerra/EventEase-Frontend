@@ -126,6 +126,72 @@ export default function HomePage() {
       <Header />
 
       <main className="landing-content">
+        {/* Organizer Application Status Banner */}
+        {user?.organizerStatus === 'PENDING' && (
+          <div
+            className="alert alert-warning"
+            role="status"
+            style={{
+              marginBottom: '1.5rem',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+              borderRadius: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.4rem', lineHeight: 1 }} aria-hidden="true">
+                ⏳
+              </span>
+              <div>
+                <strong style={{ display: 'block', fontSize: '0.95rem', marginBottom: '0.2rem' }}>
+                  Organizer Application Under Review
+                </strong>
+                <span style={{ fontSize: '0.85rem', color: 'inherit' }}>
+                  Your request for an Event Organizer account has been submitted and is currently awaiting administrator review. In the meantime, you have full access to explore events, register, and participate.
+                </span>
+              </div>
+            </div>
+            <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>
+              Pending Review
+            </span>
+          </div>
+        )}
+
+        {user?.organizerStatus === 'REJECTED' && (
+          <div
+            className="alert alert-error"
+            role="status"
+            style={{
+              marginBottom: '1.5rem',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+              borderRadius: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.4rem', lineHeight: 1 }} aria-hidden="true">
+                ℹ️
+              </span>
+              <div>
+                <strong style={{ display: 'block', fontSize: '0.95rem', marginBottom: '0.2rem' }}>
+                  Organizer Request Status
+                </strong>
+                <span style={{ fontSize: '0.85rem', color: 'inherit' }}>
+                  Your organizer application was not approved at this time. Your account remains active with standard participant access.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Personalized Welcome Card */}
         <section className="home-welcome-card">
           <div className="home-welcome-info">
@@ -141,11 +207,27 @@ export default function HomePage() {
                 <strong>Role:</strong>{' '}
                 <span className="badge badge-role">{formatFriendlyRole(user?.role)}</span>
               </span>
+              {user?.organizerStatus === 'PENDING' && (
+                <>
+                  <span>•</span>
+                  <span className="badge badge-warning">Organizer Pending</span>
+                </>
+              )}
             </div>
           </div>
 
           <div className="home-welcome-actions">
-            <Link to="/events" className="btn btn-primary">
+            {userRole === 'ORGANIZER' && (
+              <Link to="/organizer/dashboard" className="btn btn-primary">
+                Organizer Dashboard
+              </Link>
+            )}
+            {userRole === 'ADMIN' && (
+              <Link to="/admin/dashboard" className="btn btn-primary">
+                Admin Dashboard
+              </Link>
+            )}
+            <Link to="/events" className={userRole === 'USER' ? 'btn btn-primary' : 'btn btn-secondary'}>
               Explore Events
             </Link>
             <Link to="/profile" className="btn btn-secondary">

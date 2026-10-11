@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   // Safely compute destination preventing loops back to /login or /signup
   const rawFrom = location.state?.from
-  const destination = (() => {
+  const computeDestination = (role) => {
     if (rawFrom) {
       if (typeof rawFrom === 'string' && rawFrom !== '/login' && rawFrom !== '/signup') {
         return rawFrom
@@ -21,8 +21,14 @@ export default function LoginPage() {
         return `${rawFrom.pathname}${rawFrom.search || ''}`
       }
     }
+    if (role === 'ORGANIZER') {
+      return '/organizer/dashboard'
+    }
+    if (role === 'ADMIN') {
+      return '/admin/dashboard'
+    }
     return '/home'
-  })()
+  }
 
   const [formData, setFormData] = useState({
     email: '',
@@ -51,7 +57,7 @@ export default function LoginPage() {
   // Redirect on initial arrival if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(destination, { replace: true })
+      navigate(computeDestination(user?.role), { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -137,8 +143,9 @@ export default function LoginPage() {
       })
 
       // Brief delay so user sees confirmation feedback before redirection
+      const targetDestination = computeDestination(authData?.role)
       redirectTimeoutRef.current = setTimeout(() => {
-        navigate(destination, { replace: true })
+        navigate(targetDestination, { replace: true })
       }, 700)
     } catch (err) {
       // Map field-level backend validation errors if provided
