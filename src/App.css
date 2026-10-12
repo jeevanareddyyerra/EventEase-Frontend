@@ -3246,3 +3246,33 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Vector Icon System Utilities (Lucide Integration)
+   -------------------------------------------------------------------------- */
+.inline-icon {
+  display: inline-block;
+  vertical-align: -0.15em;
+  margin-right: 0.35rem;
+  flex-shrink: 0;
+}
+
+.brand-icon-svg {
+  display: inline-block;
+  vertical-align: -0.18em;
+  margin-right: 0.4rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.empty-icon-svg {
+  display: inline-block;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.activity-stat-icon-svg {
+  display: inline-block;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+}

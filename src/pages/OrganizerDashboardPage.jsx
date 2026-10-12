@@ -1,5 +1,22 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  CheckCircle2,
+  AlertCircle,
+  RotateCw,
+  X,
+  Award,
+  Check,
+  ExternalLink,
+  CalendarDays,
+  Clock3,
+  MapPin,
+  UsersRound,
+  Pencil,
+  Send,
+  XCircle,
+  Search,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -814,7 +831,9 @@ export default function OrganizerDashboardPage() {
             style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="alert-icon" aria-hidden="true">✓</span>
+              <span className="alert-icon" aria-hidden="true">
+                <CheckCircle2 size={16} />
+              </span>
               <span>{actionSuccess}</span>
             </div>
             <button
@@ -835,7 +854,9 @@ export default function OrganizerDashboardPage() {
             style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="alert-icon" aria-hidden="true">⚠</span>
+              <span className="alert-icon" aria-hidden="true">
+                <AlertCircle size={16} />
+              </span>
               <span>{actionError}</span>
             </div>
             <button
@@ -863,7 +884,7 @@ export default function OrganizerDashboardPage() {
                   </span>
                 </div>
                 <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', color: 'var(--text)' }}>
-                  📅 {formatDate(rosterEvent.date)} &bull; ⏰ {formatTimeRange(rosterEvent.startTime, rosterEvent.endTime)} &bull; 📍 {rosterEvent.venue || 'TBA'} &bull; 👥 Capacity: {rosterEvent.capacity != null ? `${rosterEvent.capacity} Max` : 'Open'}
+                  <CalendarDays size={14} className="inline-icon" /> {formatDate(rosterEvent.date)} &bull; <Clock3 size={14} className="inline-icon" /> {formatTimeRange(rosterEvent.startTime, rosterEvent.endTime)} &bull; <MapPin size={14} className="inline-icon" /> {rosterEvent.venue || 'TBA'} &bull; <UsersRound size={14} className="inline-icon" /> Capacity: {rosterEvent.capacity != null ? `${rosterEvent.capacity} Max` : 'Open'}
                 </p>
               </div>
 
@@ -874,14 +895,14 @@ export default function OrganizerDashboardPage() {
                   onClick={handleRefreshRoster}
                   disabled={isRosterLoading}
                 >
-                  🔄 Refresh
+                  <RotateCw size={13} className="inline-icon" /> Refresh
                 </button>
                 <button
                   type="button"
                   className="btn btn-secondary"
                   onClick={handleCloseRoster}
                 >
-                  ✕ Close Roster
+                  <X size={13} className="inline-icon" /> Close Roster
                 </button>
               </div>
             </div>
@@ -930,7 +951,7 @@ export default function OrganizerDashboardPage() {
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="alert-icon" aria-hidden="true">✓</span>
+                  <CheckCircle2 size={16} className="inline-icon" aria-hidden="true" />
                   <span>{rosterActionSuccess}</span>
                 </div>
                 <button
@@ -951,7 +972,7 @@ export default function OrganizerDashboardPage() {
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="alert-icon" aria-hidden="true">⚠</span>
+                  <AlertCircle size={16} className="inline-icon" aria-hidden="true" />
                   <span>{rosterActionError}</span>
                 </div>
                 <button
@@ -1049,7 +1070,7 @@ export default function OrganizerDashboardPage() {
               </div>
             ) : rosterError ? (
               <div className="connection-card" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
-                <span style={{ fontSize: '2rem' }} aria-hidden="true">⚠</span>
+                <AlertCircle size={36} className="empty-icon-svg" aria-hidden="true" />
                 <h3 style={{ margin: '0.5rem 0' }}>Failed to Load Roster</h3>
                 <p className="hero-description" style={{ margin: '0 auto 1.25rem', maxWidth: '400px' }}>
                   {rosterError}
@@ -1060,7 +1081,7 @@ export default function OrganizerDashboardPage() {
               </div>
             ) : paginatedRoster.length === 0 ? (
               <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-                <span style={{ fontSize: '2.5rem' }} aria-hidden="true">👥</span>
+                <UsersRound size={40} className="empty-icon-svg" aria-hidden="true" />
                 <h3 style={{ margin: '0.5rem 0' }}>
                   {rosterRegistrations.length === 0 ? 'No Registrations Recorded Yet' : 'No Matching Registrations'}
                 </h3>
@@ -1261,7 +1282,8 @@ export default function OrganizerDashboardPage() {
                                               style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem' }}
                                               title="Open certificate document"
                                             >
-                                              🔗 Open
+                                              <ExternalLink size={12} className="inline-icon" aria-hidden="true" />
+                                              Open
                                             </a>
                                           )}
                                         </>
@@ -1287,7 +1309,14 @@ export default function OrganizerDashboardPage() {
                                               : 'Issue certificate of completion'
                                           }
                                         >
-                                          {isIssuingCert ? 'Issuing...' : '🎓 Issue Certificate'}
+                                          {isIssuingCert ? (
+                                            'Issuing...'
+                                          ) : (
+                                            <>
+                                              <Award size={13} className="inline-icon" aria-hidden="true" />
+                                              Issue Certificate
+                                            </>
+                                          )}
                                         </button>
                                       </div>
                                     )}
@@ -1307,7 +1336,14 @@ export default function OrganizerDashboardPage() {
                                       onClick={() => handleUpdateVolunteer(reg.id, 'ACCEPTED')}
                                       title="Accept Volunteer"
                                     >
-                                      {isProcessingThis ? '...' : '✓ Accept'}
+                                      {isProcessingThis ? (
+                                        '...'
+                                      ) : (
+                                        <>
+                                          <Check size={13} className="inline-icon" aria-hidden="true" />
+                                          Accept
+                                        </>
+                                      )}
                                     </button>
                                     <button
                                       type="button"
@@ -1316,7 +1352,14 @@ export default function OrganizerDashboardPage() {
                                       onClick={() => handleUpdateVolunteer(reg.id, 'REJECTED')}
                                       title="Reject Volunteer"
                                     >
-                                      {isProcessingThis ? '...' : '✕ Reject'}
+                                      {isProcessingThis ? (
+                                        '...'
+                                      ) : (
+                                        <>
+                                          <X size={13} className="inline-icon" aria-hidden="true" />
+                                          Reject
+                                        </>
+                                      )}
                                     </button>
                                   </>
                                 )}
@@ -1405,7 +1448,7 @@ export default function OrganizerDashboardPage() {
             {/* Error State */}
             {!isLoading && errorMessage && (
               <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-                <span style={{ fontSize: '2.5rem' }} aria-hidden="true">⚠</span>
+                <AlertCircle size={40} className="empty-icon-svg" aria-hidden="true" />
                 <h2 style={{ margin: '0.75rem 0 0.25rem' }}>Unable to Load Organized Events</h2>
                 <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '440px' }}>
                   {errorMessage}
@@ -1470,7 +1513,7 @@ export default function OrganizerDashboardPage() {
                 {/* Empty State */}
                 {events.length === 0 ? (
                   <div className="connection-card" style={{ textAlign: 'center', padding: '3.5rem 2rem' }}>
-                    <span style={{ fontSize: '2.75rem' }} aria-hidden="true">📅</span>
+                    <CalendarDays size={44} className="empty-icon-svg" aria-hidden="true" />
                     <h2 style={{ margin: '0.75rem 0 0.25rem' }}>No Events Created Yet</h2>
                     <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '480px' }}>
                       You have not submitted any event proposals yet. Create your first event now
@@ -1482,7 +1525,7 @@ export default function OrganizerDashboardPage() {
                   </div>
                 ) : filteredEvents.length === 0 ? (
                   <div className="connection-card" style={{ textAlign: 'center', padding: '2.5rem 2rem' }}>
-                    <span style={{ fontSize: '2rem' }} aria-hidden="true">🔍</span>
+                    <Search size={36} className="empty-icon-svg" aria-hidden="true" />
                     <h3 style={{ margin: '0.5rem 0 0.25rem' }}>
                       No {activeTab.toLowerCase()} events found
                     </h3>
@@ -1558,20 +1601,25 @@ export default function OrganizerDashboardPage() {
                             {/* Event Metadata Chips */}
                             <div className="organizer-meta-chips">
                               <span className="meta-chip">
-                                📅 {formatDate(ev.date)}
+                                <CalendarDays size={13} className="inline-icon" aria-hidden="true" />
+                                {formatDate(ev.date)}
                               </span>
                               <span className="meta-chip">
-                                ⏰ {formatTimeRange(ev.startTime, ev.endTime)}
+                                <Clock3 size={13} className="inline-icon" aria-hidden="true" />
+                                {formatTimeRange(ev.startTime, ev.endTime)}
                               </span>
                               <span className="meta-chip">
-                                📍 {ev.venue || 'TBA'}
+                                <MapPin size={13} className="inline-icon" aria-hidden="true" />
+                                {ev.venue || 'TBA'}
                               </span>
                               <span className="meta-chip">
-                                👥 {ev.capacity != null ? `${ev.capacity} Max` : 'Open'}
+                                <UsersRound size={13} className="inline-icon" aria-hidden="true" />
+                                {ev.capacity != null ? `${ev.capacity} Max` : 'Open'}
                               </span>
                               {ev.registrationDeadline && (
                                 <span className="meta-chip">
-                                  ⏳ Deadline: {formatDateTime(ev.registrationDeadline)}
+                                  <Clock3 size={13} className="inline-icon" aria-hidden="true" />
+                                  Deadline: {formatDateTime(ev.registrationDeadline)}
                                 </span>
                               )}
                             </div>
@@ -1627,7 +1675,7 @@ export default function OrganizerDashboardPage() {
                           {isConfirmingCancel && (
                             <div className="my-reg-confirm-box" role="alert" style={{ margin: '0.75rem 0' }}>
                               <div className="confirm-box-content">
-                                <span style={{ fontSize: '1.25rem' }} aria-hidden="true">⚠</span>
+                                <AlertCircle size={20} className="inline-icon" aria-hidden="true" style={{ color: 'var(--color-danger, #ef4444)', flexShrink: 0 }} />
                                 <div>
                                   <strong>Cancel Event Confirmation</strong>
                                   <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem' }}>
@@ -1666,7 +1714,8 @@ export default function OrganizerDashboardPage() {
                                 style={{ fontSize: '0.85rem', padding: '0.4rem 0.85rem' }}
                                 onClick={() => handleOpenRoster(ev)}
                               >
-                                👥 Attendee Roster {summary?.totalRegistrations != null ? `(${summary.totalRegistrations})` : ''}
+                                <UsersRound size={14} className="inline-icon" aria-hidden="true" />
+                                Attendee Roster {summary?.totalRegistrations != null ? `(${summary.totalRegistrations})` : ''}
                               </button>
 
                               <Link
@@ -1683,7 +1732,8 @@ export default function OrganizerDashboardPage() {
                                   className="btn btn-secondary"
                                   style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
                                 >
-                                  ✏️ Edit
+                                  <Pencil size={13} className="inline-icon" aria-hidden="true" />
+                                  Edit
                                 </Link>
                               )}
                             </div>
@@ -1692,8 +1742,9 @@ export default function OrganizerDashboardPage() {
                               {/* Case A: PENDING Status */}
                               {ev.status === 'PENDING' && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                  <span className="status-note" style={{ color: '#f59e0b' }}>
-                                    ⏳ Awaiting Admin Approval
+                                  <span className="status-note" style={{ color: '#f59e0b', display: 'inline-flex', alignItems: 'center' }}>
+                                    <Clock3 size={13} className="inline-icon" aria-hidden="true" />
+                                    Awaiting Admin Approval
                                   </span>
                                   {!isConfirmingCancel && (
                                     <button
@@ -1718,7 +1769,14 @@ export default function OrganizerDashboardPage() {
                                     onClick={() => handleTransitionStatus(ev.id, 'PUBLISHED')}
                                     disabled={isProcessing}
                                   >
-                                    {isProcessing ? 'Publishing...' : '🚀 Publish Event Now'}
+                                    {isProcessing ? (
+                                      'Publishing...'
+                                    ) : (
+                                      <>
+                                        <Send size={13} className="inline-icon" aria-hidden="true" />
+                                        Publish Event Now
+                                      </>
+                                    )}
                                   </button>
                                   {!isConfirmingCancel && (
                                     <button
@@ -1743,7 +1801,14 @@ export default function OrganizerDashboardPage() {
                                     onClick={() => handleTransitionStatus(ev.id, 'COMPLETED')}
                                     disabled={isProcessing}
                                   >
-                                    {isProcessing ? 'Updating...' : '🏁 Mark Completed'}
+                                    {isProcessing ? (
+                                      'Updating...'
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 size={13} className="inline-icon" aria-hidden="true" />
+                                        Mark Completed
+                                      </>
+                                    )}
                                   </button>
                                   {!isConfirmingCancel && (
                                     <button
@@ -1760,14 +1825,16 @@ export default function OrganizerDashboardPage() {
 
                               {/* Case D: Terminal Statuses */}
                               {ev.status === 'COMPLETED' && (
-                                <span className="status-note status-note-cancelled">
-                                  🏁 Completed
+                                <span className="status-note status-note-cancelled" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                  <CheckCircle2 size={13} className="inline-icon" aria-hidden="true" />
+                                  Completed
                                 </span>
                               )}
 
                               {ev.status === 'CANCELLED' && (
-                                <span className="status-note status-note-cancelled">
-                                  🚫 Cancelled
+                                <span className="status-note status-note-cancelled" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                  <XCircle size={13} className="inline-icon" aria-hidden="true" />
+                                  Cancelled
                                 </span>
                               )}
                             </div>

@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import {
+  ShieldAlert,
+  AlertCircle,
+  Info,
+  Upload,
+  Trash2,
+  Loader2,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -382,7 +390,7 @@ export default function OrganizerEventFormPage() {
         {/* Ownership Forbidden State */}
         {!isLoadingEvent && ownershipForbidden && (
           <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-            <span style={{ fontSize: '2.5rem' }} aria-hidden="true">🚫</span>
+            <ShieldAlert size={36} className="empty-icon-svg" aria-hidden="true" />
             <h2 style={{ margin: '0.75rem 0 0.25rem' }}>Unauthorized Action</h2>
             <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '440px' }}>
               You can only edit events that you have organized.
@@ -414,7 +422,9 @@ export default function OrganizerEventFormPage() {
 
             {cannotEditStatus && (
               <div className="alert alert-warning" role="alert" style={{ marginBottom: '1.5rem' }}>
-                <span className="alert-icon" aria-hidden="true">ℹ</span>
+                <span className="alert-icon" aria-hidden="true">
+                  <Info size={16} />
+                </span>
                 <span>
                   Notice: This event is currently in <strong>{cannotEditStatus}</strong> status.
                   Backend policy restricts updates on concluded or cancelled events.
@@ -424,7 +434,9 @@ export default function OrganizerEventFormPage() {
 
             {serverError && (
               <div className="alert alert-error" role="alert" style={{ marginBottom: '1.5rem' }}>
-                <span className="alert-icon" aria-hidden="true">⚠</span>
+                <span className="alert-icon" aria-hidden="true">
+                  <AlertCircle size={16} />
+                </span>
                 <span>{serverError}</span>
               </div>
             )}
@@ -568,7 +580,7 @@ export default function OrganizerEventFormPage() {
                           onClick={handleRemoveImage}
                           disabled={isSubmitting || isUploadingImage || Boolean(cannotEditStatus)}
                         >
-                          ✕ Remove Poster
+                          <Trash2 size={13} className="inline-icon" /> Remove Poster
                         </button>
                         <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                           {selectedImageFile
@@ -601,7 +613,7 @@ export default function OrganizerEventFormPage() {
                         className="btn btn-secondary"
                         style={{ cursor: 'pointer', display: 'inline-block' }}
                       >
-                        📁 Choose Image File
+                        <Upload size={14} className="inline-icon" /> Choose Image File
                       </label>
                       <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         Recommended size: 1200×630px or 16:9 • Formats: JPG, PNG, WebP up to 5MB
@@ -616,7 +628,7 @@ export default function OrganizerEventFormPage() {
                   )}
                   {isUploadingImage && (
                     <span style={{ display: 'block', marginTop: '0.5rem', color: 'var(--accent)', fontSize: '0.85rem' }}>
-                      ⏳ Uploading poster to secure cloud storage...
+                      <Loader2 size={14} className="inline-icon animate-spin" /> Uploading poster to secure cloud storage...
                     </span>
                   )}
                 </div>

@@ -1,5 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  CheckCircle2,
+  AlertCircle,
+  ClipboardList,
+  Search,
+  UsersRound,
+  Ticket,
+  Award,
+  CalendarDays,
+  MapPin,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -230,7 +241,9 @@ export default function MyRegistrationsPage() {
             style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="alert-icon" aria-hidden="true">✓</span>
+              <span className="alert-icon" aria-hidden="true">
+                <CheckCircle2 size={16} />
+              </span>
               <span>{actionSuccess}</span>
             </div>
             <button
@@ -251,7 +264,9 @@ export default function MyRegistrationsPage() {
             style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="alert-icon" aria-hidden="true">⚠</span>
+              <span className="alert-icon" aria-hidden="true">
+                <AlertCircle size={16} />
+              </span>
               <span>{actionError}</span>
             </div>
             <button
@@ -276,7 +291,7 @@ export default function MyRegistrationsPage() {
         {/* Error State */}
         {!isLoading && errorMessage && (
           <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-            <span style={{ fontSize: '2.5rem' }} aria-hidden="true">⚠</span>
+            <AlertCircle size={36} className="empty-icon-svg" aria-hidden="true" />
             <h2 style={{ margin: '0.75rem 0 0.25rem' }}>Unable to Load Registrations</h2>
             <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '440px' }}>
               {errorMessage}
@@ -363,7 +378,7 @@ export default function MyRegistrationsPage() {
             {/* Empty States */}
             {registrations.length === 0 ? (
               <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-                <span style={{ fontSize: '2.5rem' }} aria-hidden="true">📋</span>
+                <ClipboardList size={36} className="empty-icon-svg" aria-hidden="true" />
                 <h2 style={{ margin: '0.75rem 0 0.25rem' }}>No Registrations Yet</h2>
                 <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '460px' }}>
                   You have not registered for any events yet. Explore upcoming hackathons,
@@ -375,7 +390,7 @@ export default function MyRegistrationsPage() {
               </div>
             ) : filteredRegistrations.length === 0 ? (
               <div className="connection-card" style={{ textAlign: 'center', padding: '2.5rem 2rem' }}>
-                <span style={{ fontSize: '2rem' }} aria-hidden="true">🔍</span>
+                <Search size={32} className="empty-icon-svg" aria-hidden="true" />
                 <h3 style={{ margin: '0.5rem 0 0.25rem' }}>
                   No matching registrations found
                 </h3>
@@ -414,7 +429,15 @@ export default function MyRegistrationsPage() {
                                 reg.type === 'VOLUNTEER' ? 'badge-role' : 'badge-accent'
                               }`}
                             >
-                              {reg.type === 'VOLUNTEER' ? '🤝 Volunteer' : '🎟️ Participant'}
+                              {reg.type === 'VOLUNTEER' ? (
+                                <>
+                                  <UsersRound size={13} className="inline-icon" /> Volunteer
+                                </>
+                              ) : (
+                                <>
+                                  <Ticket size={13} className="inline-icon" /> Participant
+                                </>
+                              )}
                             </span>
                             <span className={`badge ${getStatusBadgeClass(reg.status)}`}>
                               {reg.status}
@@ -430,7 +453,7 @@ export default function MyRegistrationsPage() {
                             {reg.eventStatus === 'COMPLETED' && (
                               certificatesMap[reg.id]?.status === 'ISSUED' ? (
                                 <span className="badge badge-success">
-                                  🎓 Certificate #{certificatesMap[reg.id].id}
+                                  <Award size={13} className="inline-icon" /> Certificate #{certificatesMap[reg.id].id}
                                 </span>
                               ) : (
                                 <span className="badge badge-secondary">
@@ -468,7 +491,7 @@ export default function MyRegistrationsPage() {
                             >
                               {reg.eventDate && (
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                  <span aria-hidden="true">📅</span>
+                                  <CalendarDays size={14} className="inline-icon" aria-hidden="true" />
                                   <span>
                                     {formatDate(reg.eventDate)}
                                     {reg.eventStartTime ? ` • ${formatTime(reg.eventStartTime)}` : ''}
@@ -477,7 +500,7 @@ export default function MyRegistrationsPage() {
                               )}
                               {reg.eventVenue && (
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                  <span aria-hidden="true">📍</span>
+                                  <MapPin size={14} className="inline-icon" aria-hidden="true" />
                                   <span>{reg.eventVenue}</span>
                                 </span>
                               )}
@@ -502,7 +525,7 @@ export default function MyRegistrationsPage() {
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ fontSize: '1.25rem' }} aria-hidden="true">🎓</span>
+                                <Award size={18} className="inline-icon" aria-hidden="true" />
                                 <div>
                                   <strong style={{ color: 'var(--text-h)', fontSize: '0.88rem' }}>
                                     Certificate of Attendance
@@ -546,7 +569,7 @@ export default function MyRegistrationsPage() {
                       {isConfirming && (
                         <div className="my-reg-confirm-box" role="alert">
                           <div className="confirm-box-content">
-                            <span style={{ fontSize: '1.25rem' }} aria-hidden="true">⚠</span>
+                            <AlertCircle size={18} className="inline-icon" aria-hidden="true" />
                             <div>
                               <strong>Cancel Registration Confirmation</strong>
                               <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>

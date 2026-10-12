@@ -1,5 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import {
+  ClipboardList,
+  Ticket,
+  HeartHandshake,
+  XCircle,
+  AlertCircle,
+  CalendarDays,
+  MapPin,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -226,7 +235,7 @@ export default function ProfilePage() {
 
             {!isLoadingActivity && activityError && (
               <div className="alert alert-error" role="alert" style={{ margin: '1rem 0' }}>
-                <span className="alert-icon" aria-hidden="true">⚠</span>
+                <AlertCircle size={16} className="inline-icon" aria-hidden="true" />
                 <span>{activityError}</span>
               </div>
             )}
@@ -236,25 +245,25 @@ export default function ProfilePage() {
                 {/* Activity Metrics Grid */}
                 <div className="activity-stats-grid">
                   <div className="activity-stat-card">
-                    <span className="activity-stat-icon" aria-hidden="true">📋</span>
+                    <ClipboardList size={20} className="activity-stat-icon-svg" aria-hidden="true" />
                     <span className="activity-stat-number">{activityMetrics.total}</span>
                     <span className="activity-stat-label">Total Registrations</span>
                   </div>
 
                   <div className="activity-stat-card">
-                    <span className="activity-stat-icon" aria-hidden="true">🎟️</span>
+                    <Ticket size={20} className="activity-stat-icon-svg" aria-hidden="true" />
                     <span className="activity-stat-number">{activityMetrics.active}</span>
                     <span className="activity-stat-label">Active Tickets</span>
                   </div>
 
                   <div className="activity-stat-card">
-                    <span className="activity-stat-icon" aria-hidden="true">🤝</span>
+                    <HeartHandshake size={20} className="activity-stat-icon-svg" aria-hidden="true" />
                     <span className="activity-stat-number">{activityMetrics.volunteer}</span>
                     <span className="activity-stat-label">Volunteer Roles</span>
                   </div>
 
                   <div className="activity-stat-card">
-                    <span className="activity-stat-icon" aria-hidden="true">🚫</span>
+                    <XCircle size={20} className="activity-stat-icon-svg" aria-hidden="true" />
                     <span className="activity-stat-number">{activityMetrics.cancelled}</span>
                     <span className="activity-stat-label">Cancelled Tickets</span>
                   </div>
@@ -334,10 +343,20 @@ export default function ProfilePage() {
                               {reg.eventTitle || `Event #${reg.eventId}`}
                             </Link>
                             {(reg.eventDate || reg.eventVenue) && (
-                              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                                {reg.eventDate ? `📅 ${formatDate(reg.eventDate)}` : ''}
-                                {reg.eventDate && reg.eventVenue ? ' • ' : ''}
-                                {reg.eventVenue ? `📍 ${reg.eventVenue}` : ''}
+                              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.15rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                {reg.eventDate && (
+                                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <CalendarDays size={12} className="inline-icon" aria-hidden="true" />
+                                    {formatDate(reg.eventDate)}
+                                  </span>
+                                )}
+                                {reg.eventDate && reg.eventVenue && <span>•</span>}
+                                {reg.eventVenue && (
+                                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <MapPin size={12} className="inline-icon" aria-hidden="true" />
+                                    {reg.eventVenue}
+                                  </span>
+                                )}
                               </div>
                             )}
                           </div>

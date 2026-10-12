@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { FileQuestion } from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -12,9 +13,7 @@ export default function NotFoundPage() {
 
       <main className="landing-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div className="connection-card" style={{ textAlign: 'center', padding: '3.5rem 2.5rem', maxWidth: '520px', width: '100%' }}>
-          <span style={{ fontSize: '3.5rem', display: 'block', marginBottom: '0.5rem' }} aria-hidden="true">
-            🔍
-          </span>
+          <FileQuestion size={48} className="empty-icon-svg" aria-hidden="true" style={{ margin: '0 auto 1rem', display: 'block' }} />
           <span className="badge badge-error" style={{ marginBottom: '1rem', display: 'inline-block' }}>
             404 Error
           </span>

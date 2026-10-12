@@ -1,5 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import {
+  Sparkles,
+  AlertCircle,
+  Target,
+  MessageSquare,
+  CheckCircle2,
+  FileText,
+  Bot,
+  ShieldCheck,
+  FileCheck,
+  Lock,
+  Info,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { askAiAssistant } from '../api/aiAssistantApi'
@@ -210,7 +223,9 @@ export default function AiAssistantPage() {
           {/* Header & Description */}
           <section className="ai-assistant-header">
             <div className="ai-header-badge-row">
-              <span className="badge badge-accent">✨ EventEase Assistant</span>
+              <span className="badge badge-accent">
+                <Sparkles size={13} className="inline-icon" aria-hidden="true" /> EventEase Assistant
+              </span>
               <span className="badge badge-success">Verified Answers</span>
             </div>
             <h1 className="hero-title" style={{ fontSize: '2.4rem', textAlign: 'left', margin: '0.5rem 0' }}>
@@ -277,8 +292,9 @@ export default function AiAssistantPage() {
                 role="alert"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <span>
-                    ⚠️ <strong>Invalid Event Filter:</strong> The event ID specified in the URL (<code>{selectedEventId}</code>) is invalid.
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertCircle size={15} className="inline-icon" aria-hidden="true" />
+                    <span><strong>Invalid Event Filter:</strong> The event ID specified in the URL (<code>{selectedEventId}</code>) is invalid.</span>
                   </span>
                   <button
                     type="button"
@@ -299,8 +315,9 @@ export default function AiAssistantPage() {
                 role="status"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <span>
-                    ℹ <strong>Notice:</strong> Event #{selectedEventId} is not in the list of published events (it may be unpublished, cancelled, or not exist). Inquiries may return an error until cleared.
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Info size={15} className="inline-icon" aria-hidden="true" />
+                    <span><strong>Notice:</strong> Event #{selectedEventId} is not in the list of published events (it may be unpublished, cancelled, or not exist). Inquiries may return an error until cleared.</span>
                   </span>
                   <button
                     type="button"
@@ -317,7 +334,7 @@ export default function AiAssistantPage() {
             {selectedEventId && !isInvalidEventId && (
               <div className="ai-active-filter-banner" role="status">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span aria-hidden="true">🎯</span>
+                  <Target size={15} className="inline-icon" aria-hidden="true" />
                   <span>
                     Focusing on: <strong>{activeEventName}</strong>
                   </span>
@@ -412,7 +429,7 @@ export default function AiAssistantPage() {
                     disabled={isLoading}
                     title={chip.text}
                   >
-                    <span aria-hidden="true">💡</span> {chip.label}
+                    <Sparkles size={13} className="inline-icon" aria-hidden="true" /> {chip.label}
                   </button>
                 ))}
               </div>
@@ -436,9 +453,7 @@ export default function AiAssistantPage() {
           {!isLoading && error && (
             <div className="alert alert-error ai-error-card" role="alert">
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                <span className="alert-icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>
-                  ⚠
-                </span>
+                <AlertCircle size={20} className="inline-icon" aria-hidden="true" style={{ color: 'var(--color-danger, #ef4444)', flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: '0.98rem' }}>
                     {error.status === 400
@@ -509,9 +524,7 @@ export default function AiAssistantPage() {
             <article ref={responseRef} className="ai-response-card" aria-label="AI Assistant Answer">
               <div className="ai-response-header">
                 <div className="ai-question-recap">
-                  <span className="ai-recap-icon" aria-hidden="true">
-                    💬
-                  </span>
+                  <MessageSquare size={16} className="inline-icon" aria-hidden="true" style={{ color: 'var(--accent)', flexShrink: 0 }} />
                   <div>
                     <span className="ai-recap-label">You Asked:</span>
                     <div className="ai-recap-text">"{response.userQuestion}"</div>
@@ -520,9 +533,13 @@ export default function AiAssistantPage() {
 
                 <div className="ai-status-badges">
                   {response.grounded ? (
-                    <span className="badge badge-success">✓ Grounded with Evidence</span>
+                    <span className="badge badge-success">
+                      <CheckCircle2 size={12} className="inline-icon" aria-hidden="true" /> Grounded with Evidence
+                    </span>
                   ) : response.fallbackReason === 'INSUFFICIENT_EVIDENCE' ? (
-                    <span className="badge badge-warning">ℹ Insufficient Evidence</span>
+                    <span className="badge badge-warning">
+                      <Info size={12} className="inline-icon" aria-hidden="true" /> Insufficient Evidence
+                    </span>
                   ) : response.fallbackReason === 'AI_CLIENT_UNCONFIGURED' ? (
                     <span className="badge badge-secondary">AI Provider Offline</span>
                   ) : (
@@ -555,7 +572,7 @@ export default function AiAssistantPage() {
               {/* Fallback Notice Cards */}
               {response.fallbackReason === 'INSUFFICIENT_EVIDENCE' && (
                 <div className="ai-fallback-callout callout-warning">
-                  <span aria-hidden="true">ℹ</span>
+                  <Info size={16} className="inline-icon" aria-hidden="true" />
                   <div>
                     <strong>Why did this happen?</strong>
                     <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem' }}>
@@ -569,7 +586,7 @@ export default function AiAssistantPage() {
 
               {response.fallbackReason === 'AI_CLIENT_UNCONFIGURED' && (
                 <div className="ai-fallback-callout callout-info">
-                  <span aria-hidden="true">ℹ</span>
+                  <Info size={16} className="inline-icon" aria-hidden="true" />
                   <div>
                     <strong>AI Model Generation Offline</strong>
                     <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem' }}>
@@ -582,7 +599,7 @@ export default function AiAssistantPage() {
 
               {response.fallbackReason === 'AI_CLIENT_ERROR' && (
                 <div className="ai-fallback-callout callout-error">
-                  <span aria-hidden="true">⚠</span>
+                  <AlertCircle size={16} className="inline-icon" aria-hidden="true" />
                   <div>
                     <strong>Temporary AI Provider Error</strong>
                     <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem' }}>
@@ -631,7 +648,7 @@ export default function AiAssistantPage() {
                         </div>
 
                         <div className="ai-citation-doc-title">
-                          📄 {source.documentTitle || 'Untitled Document'}
+                          <FileText size={13} className="inline-icon" aria-hidden="true" /> {source.documentTitle || 'Untitled Document'}
                         </div>
 
                         <div className="ai-citation-event-title">
@@ -655,9 +672,7 @@ export default function AiAssistantPage() {
           {/* Friendly Empty State */}
           {!isLoading && !response && !error && (
             <section className="ai-empty-state-card">
-              <span className="ai-empty-icon" aria-hidden="true">
-                🤖
-              </span>
+              <Bot size={40} className="empty-icon-svg" aria-hidden="true" style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--accent)' }} />
               <h2 className="ai-empty-title">Ready for Your Questions</h2>
               <p className="ai-empty-desc">
                 EventEase Assistant searches official published event schedules, guidelines, and
@@ -665,15 +680,15 @@ export default function AiAssistantPage() {
               </p>
               <div className="ai-empty-feature-grid">
                 <div className="ai-feature-pill">
-                  <span aria-hidden="true">🛡️</span>
+                  <ShieldCheck size={14} className="inline-icon" aria-hidden="true" />
                   <span>Strict public-event visibility</span>
                 </div>
                 <div className="ai-feature-pill">
-                  <span aria-hidden="true">📌</span>
+                  <FileCheck size={14} className="inline-icon" aria-hidden="true" />
                   <span>Verifiable source citations</span>
                 </div>
                 <div className="ai-feature-pill">
-                  <span aria-hidden="true">🔒</span>
+                  <Lock size={14} className="inline-icon" aria-hidden="true" />
                   <span>Zero prompt injection leakage</span>
                 </div>
               </div>

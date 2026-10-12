@@ -1,8 +1,49 @@
 import { Link, useNavigate } from 'react-router-dom'
+import {
+  CalendarDays,
+  ClipboardList,
+  Bot,
+  Award,
+  UsersRound,
+  CheckCircle2,
+  HeartHandshake,
+  BarChart3,
+  ShieldCheck,
+  UserCheck,
+  Clock3,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
 import { formatFriendlyRole } from '../utils/formatters'
+
+const CARD_ICONS = {
+  'browse-events': CalendarDays,
+  'my-registrations': ClipboardList,
+  'ai-assistant': Bot,
+  'my-certificates': Award,
+  'manage-events': CalendarDays,
+  'registrations': UsersRound,
+  'attendance': CheckCircle2,
+  'volunteer-applications': HeartHandshake,
+  'platform-overview': BarChart3,
+  'user-management': UserCheck,
+  'event-approvals': ShieldCheck,
+}
+
+const CARD_LINKS = {
+  'browse-events': '/events',
+  'my-registrations': '/my-registrations',
+  'ai-assistant': '/assistant',
+  'my-certificates': '/my-registrations',
+  'manage-events': '/organizer/dashboard',
+  'registrations': '/organizer/dashboard',
+  'attendance': '/organizer/dashboard',
+  'volunteer-applications': '/organizer/dashboard',
+  'platform-overview': '/admin/dashboard',
+  'user-management': '/admin/dashboard',
+  'event-approvals': '/admin/dashboard',
+}
 
 /**
  * Role-specific preview card definitions.
@@ -13,7 +54,6 @@ const ROLE_CARDS = {
     {
       id: 'browse-events',
       title: 'Browse Events',
-      icon: '🎪',
       description: 'Explore upcoming campus and corporate events, hackathons, and workshops.',
       actionLabel: 'Browse Events',
       badge: 'Participant',
@@ -21,7 +61,6 @@ const ROLE_CARDS = {
     {
       id: 'my-registrations',
       title: 'My Registrations',
-      icon: '📋',
       description: 'View active registrations, track admission status, and manage ticket reservations.',
       actionLabel: 'My Registrations',
       badge: 'Participant',
@@ -29,7 +68,6 @@ const ROLE_CARDS = {
     {
       id: 'ai-assistant',
       title: 'AI Event Assistant',
-      icon: '✨',
       description: 'Ask questions about event rules, eligibility, venue, and schedules grounded in event documents.',
       actionLabel: 'Ask AI Assistant',
       badge: 'Assistant',
@@ -37,7 +75,6 @@ const ROLE_CARDS = {
     {
       id: 'my-certificates',
       title: 'My Certificates',
-      icon: '🎓',
       description: 'Access verified certificates of attendance and event completion credentials.',
       actionLabel: 'My Certificates',
       badge: 'Participant',
@@ -47,7 +84,6 @@ const ROLE_CARDS = {
     {
       id: 'manage-events',
       title: 'Manage Events',
-      icon: '📅',
       description: 'Create, edit, publish, and monitor your organized events and schedules.',
       actionLabel: 'Manage Events',
       badge: 'Organizer',
@@ -55,7 +91,6 @@ const ROLE_CARDS = {
     {
       id: 'registrations',
       title: 'Registrations',
-      icon: '👥',
       description: 'Track attendee enrollment, review participant details, and release capacities.',
       actionLabel: 'Review Registrations',
       badge: 'Organizer',
@@ -63,7 +98,6 @@ const ROLE_CARDS = {
     {
       id: 'attendance',
       title: 'Attendance',
-      icon: '✅',
       description: 'Manage real-time check-ins and verify attended participants for certificate issue.',
       actionLabel: 'Mark Attendance',
       badge: 'Organizer',
@@ -71,7 +105,6 @@ const ROLE_CARDS = {
     {
       id: 'volunteer-applications',
       title: 'Volunteer Applications',
-      icon: '🤝',
       description: 'Review applicant submissions, assign volunteer roles, and accept/reject candidates.',
       actionLabel: 'Review Volunteers',
       badge: 'Organizer',
@@ -81,7 +114,6 @@ const ROLE_CARDS = {
     {
       id: 'platform-overview',
       title: 'Platform Overview',
-      icon: '📊',
       description: 'Monitor platform health, event throughput, active attendees, and global statistics.',
       actionLabel: 'Platform Metrics',
       badge: 'Admin Only',
@@ -89,7 +121,6 @@ const ROLE_CARDS = {
     {
       id: 'user-management',
       title: 'User Management',
-      icon: '👤',
       description: 'Oversee registered accounts, audit user permissions, and adjust role assignments.',
       actionLabel: 'Manage Users',
       badge: 'Admin Only',
@@ -97,7 +128,6 @@ const ROLE_CARDS = {
     {
       id: 'event-approvals',
       title: 'Event Approvals',
-      icon: '🛡️',
       description: 'Audit organizer-submitted event proposals and approve or decline public listing.',
       actionLabel: 'Review Approvals',
       badge: 'Admin Only',
@@ -143,9 +173,7 @@ export default function HomePage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-              <span style={{ fontSize: '1.4rem', lineHeight: 1 }} aria-hidden="true">
-                ⏳
-              </span>
+              <Clock3 size={20} className="inline-icon" aria-hidden="true" style={{ marginTop: '0.15rem', color: '#f59e0b', flexShrink: 0 }} />
               <div>
                 <strong style={{ display: 'block', fontSize: '0.95rem', marginBottom: '0.2rem' }}>
                   Organizer Application Under Review
@@ -260,66 +288,33 @@ export default function HomePage() {
           </div>
 
           <div className="cards-grid">
-            {previewCards.map((card) => (
-              <div key={card.id} className="preview-card">
-                <div>
-                  <div className="preview-card-header">
-                    <span className="preview-card-icon" aria-hidden="true">
-                      {card.icon}
-                    </span>
-                    <span className="badge badge-accent">{card.badge}</span>
-                  </div>
-                  <h3 className="preview-card-title">{card.title}</h3>
-                  <p className="preview-card-desc">{card.description}</p>
-                </div>
+            {previewCards.map((card) => {
+              const IconComponent = CARD_ICONS[card.id] || CalendarDays
+              const targetUrl = CARD_LINKS[card.id] || '/home'
 
-                {card.id === 'browse-events' ? (
-                  <Link
-                    to="/events"
-                    className="btn btn-primary"
-                    style={{ textAlign: 'center', width: '100%' }}
-                  >
-                    Browse Events &rarr;
-                  </Link>
-                ) : card.id === 'my-registrations' ? (
-                  <Link
-                    to="/my-registrations"
-                    className="btn btn-primary"
-                    style={{ textAlign: 'center', width: '100%' }}
-                  >
-                    My Registrations &rarr;
-                  </Link>
-                ) : card.id === 'ai-assistant' ? (
-                  <Link
-                    to="/assistant"
-                    className="btn btn-primary"
-                    style={{ textAlign: 'center', width: '100%' }}
-                  >
-                    Ask AI Assistant &rarr;
-                  </Link>
-                ) : card.id === 'manage-events' ? (
-                  <Link
-                    to="/organizer/dashboard"
-                    className="btn btn-primary"
-                    style={{ textAlign: 'center', width: '100%' }}
-                  >
-                    Manage Events &rarr;
-                  </Link>
-                ) : card.id === 'my-certificates' ? (
-                  <Link
-                    to="/my-registrations"
-                    className="btn btn-primary"
-                    style={{ textAlign: 'center', width: '100%' }}
-                  >
-                    My Certificates &rarr;
-                  </Link>
-                ) : (
-                  <div className="preview-card-action">
-                    <span>{card.actionLabel} (Coming Soon)</span>
+              return (
+                <div key={card.id} className="preview-card">
+                  <div>
+                    <div className="preview-card-header">
+                      <span className="preview-card-icon" aria-hidden="true">
+                        <IconComponent size={24} />
+                      </span>
+                      <span className="badge badge-accent">{card.badge}</span>
+                    </div>
+                    <h3 className="preview-card-title">{card.title}</h3>
+                    <p className="preview-card-desc">{card.description}</p>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  <Link
+                    to={targetUrl}
+                    className="btn btn-primary"
+                    style={{ textAlign: 'center', width: '100%', marginTop: 'auto' }}
+                  >
+                    {card.actionLabel} &rarr;
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         </section>
 

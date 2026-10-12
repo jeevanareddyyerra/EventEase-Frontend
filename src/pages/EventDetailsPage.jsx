@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
+import {
+  CalendarDays,
+  Clock3,
+  MapPin,
+  UsersRound,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  Search,
+  Ticket,
+  HeartHandshake,
+  Plus,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -310,7 +323,7 @@ export default function EventDetailsPage() {
               className="btn btn-secondary"
               style={{ padding: '0.35rem 0.85rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
             >
-              <span aria-hidden="true">✨</span> Ask AI About This Event
+              <Sparkles size={14} className="inline-icon" aria-hidden="true" /> Ask AI About This Event
             </Link>
           )}
         </div>
@@ -323,7 +336,9 @@ export default function EventDetailsPage() {
             style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span className="alert-icon" aria-hidden="true">✓</span>
+              <span className="alert-icon" aria-hidden="true">
+                <CheckCircle2 size={16} />
+              </span>
               <div>
                 <span>{actionSuccess.message}</span>
                 <div style={{ marginTop: '0.2rem' }}>
@@ -355,7 +370,9 @@ export default function EventDetailsPage() {
             style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span className="alert-icon" aria-hidden="true">⚠</span>
+              <span className="alert-icon" aria-hidden="true">
+                <AlertCircle size={16} />
+              </span>
               <span>{actionError}</span>
             </div>
             <button
@@ -380,7 +397,7 @@ export default function EventDetailsPage() {
         {/* Invalid ID State */}
         {!isLoading && isInvalidId && (
           <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-            <span style={{ fontSize: '2.5rem' }} aria-hidden="true">⚠</span>
+            <AlertCircle size={36} className="empty-icon-svg" aria-hidden="true" />
             <h2 style={{ margin: '0.75rem 0 0.25rem' }}>Invalid Event Identifier</h2>
             <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '440px' }}>
               The event ID specified in the URL is not valid. Please return to the events catalog.
@@ -394,7 +411,7 @@ export default function EventDetailsPage() {
         {/* Error State */}
         {!isLoading && !isInvalidId && errorMessage && (
           <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-            <span style={{ fontSize: '2.5rem' }} aria-hidden="true">🔍</span>
+            <Search size={36} className="empty-icon-svg" aria-hidden="true" />
             <h2 style={{ margin: '0.75rem 0 0.25rem' }}>Event Unavailable</h2>
             <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '460px' }}>
               {errorMessage}
@@ -462,7 +479,9 @@ export default function EventDetailsPage() {
               {/* Quick Info Grid */}
               <div className="event-info-grid">
                 <div className="event-info-item">
-                  <span className="info-icon" aria-hidden="true">📅</span>
+                  <span className="info-icon" aria-hidden="true">
+                    <CalendarDays size={20} className="info-icon-svg" />
+                  </span>
                   <div className="info-text">
                     <span className="info-label">Date</span>
                     <span className="info-value">{formatDate(event.date)}</span>
@@ -470,7 +489,9 @@ export default function EventDetailsPage() {
                 </div>
 
                 <div className="event-info-item">
-                  <span className="info-icon" aria-hidden="true">⏰</span>
+                  <span className="info-icon" aria-hidden="true">
+                    <Clock3 size={20} className="info-icon-svg" />
+                  </span>
                   <div className="info-text">
                     <span className="info-label">Time</span>
                     <span className="info-value">
@@ -480,7 +501,9 @@ export default function EventDetailsPage() {
                 </div>
 
                 <div className="event-info-item">
-                  <span className="info-icon" aria-hidden="true">📍</span>
+                  <span className="info-icon" aria-hidden="true">
+                    <MapPin size={20} className="info-icon-svg" />
+                  </span>
                   <div className="info-text">
                     <span className="info-label">Venue</span>
                     <span className="info-value">{event.venue || 'Venue to be announced'}</span>
@@ -488,7 +511,9 @@ export default function EventDetailsPage() {
                 </div>
 
                 <div className="event-info-item">
-                  <span className="info-icon" aria-hidden="true">👥</span>
+                  <span className="info-icon" aria-hidden="true">
+                    <UsersRound size={20} className="info-icon-svg" />
+                  </span>
                   <div className="info-text">
                     <span className="info-label">Capacity &amp; Attendance</span>
                     <span className="info-value">
@@ -547,7 +572,9 @@ export default function EventDetailsPage() {
               {volunteerReq && (
                 <div className="event-section volunteer-section">
                   <div className="volunteer-header">
-                    <span className="volunteer-icon" aria-hidden="true">🤝</span>
+                    <span className="volunteer-icon" aria-hidden="true">
+                      <HeartHandshake size={20} className="info-icon-svg" />
+                    </span>
                     <div>
                       <h2 className="event-section-title" style={{ margin: 0 }}>
                         Volunteer Opportunities
@@ -578,8 +605,8 @@ export default function EventDetailsPage() {
               {/* Teams & Collaboration Section */}
               <div className="event-section">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                  <h2 className="event-section-title" style={{ margin: 0 }}>
-                    👥 Teams &amp; Collaboration ({eventTeams.length})
+                  <h2 className="event-section-title" style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <UsersRound size={18} className="inline-icon" /> Teams &amp; Collaboration ({eventTeams.length})
                   </h2>
                   {userRegistration && userRegistration.type === 'PARTICIPANT' && userRegistration.status !== 'CANCELLED' && (
                     <button
@@ -590,14 +617,14 @@ export default function EventDetailsPage() {
                         setTeamActionError(null)
                       }}
                     >
-                      + Form a Team
+                      <Plus size={13} className="inline-icon" /> Form a Team
                     </button>
                   )}
                 </div>
 
                 {teamActionSuccess && (
                   <div className="alert alert-success" style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
-                    ✓ {teamActionSuccess}
+                    <CheckCircle2 size={14} className="inline-icon" /> {teamActionSuccess}
                   </div>
                 )}
 
@@ -663,9 +690,15 @@ export default function EventDetailsPage() {
                   <div className="cta-reg-status-box">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="cta-reg-type">
-                        {userRegistration.type === 'VOLUNTEER'
-                          ? '🤝 Registered as Volunteer'
-                          : '🎟️ Registered as Participant'}
+                        {userRegistration.type === 'VOLUNTEER' ? (
+                          <>
+                            <HeartHandshake size={14} className="inline-icon" /> Registered as Volunteer
+                          </>
+                        ) : (
+                          <>
+                            <Ticket size={14} className="inline-icon" /> Registered as Participant
+                          </>
+                        )}
                       </span>
                       <span className={`badge ${getRegStatusBadgeClass(userRegistration.status)}`}>
                         {userRegistration.status}
@@ -692,7 +725,7 @@ export default function EventDetailsPage() {
                         {showCancelConfirm ? (
                           <div className="my-reg-confirm-box" style={{ marginTop: '0.5rem' }}>
                             <div className="confirm-box-content">
-                              <span style={{ fontSize: '1.25rem' }} aria-hidden="true">⚠</span>
+                              <AlertCircle size={18} className="inline-icon" aria-hidden="true" />
                               <div>
                                 <strong>Cancel Registration?</strong>
                                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem' }}>
@@ -772,7 +805,7 @@ export default function EventDetailsPage() {
 
                   {isEventOpenForRegistration && isDeadlinePassed && (
                     <div className="alert alert-error" style={{ margin: 0 }}>
-                      <span className="alert-icon" aria-hidden="true">⚠</span>
+                      <AlertCircle size={16} className="inline-icon" aria-hidden="true" />
                       <span>The registration deadline for this event has passed.</span>
                     </div>
                   )}
@@ -823,7 +856,7 @@ export default function EventDetailsPage() {
                           ? 'Submitting Application...'
                           : isVolunteerCapacityFull
                           ? 'Volunteer Positions Filled'
-                          : 'Apply as Volunteer 🤝'}
+                          : 'Apply as Volunteer'}
                       </button>
                       {isVolunteerCapacityFull && (
                         <p className="cta-notice" style={{ color: '#ef4444', marginTop: '0.3rem' }}>
@@ -852,7 +885,7 @@ export default function EventDetailsPage() {
                   className="btn btn-secondary"
                   style={{ width: '100%', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}
                 >
-                  <span aria-hidden="true">✨</span> Ask AI About This Event
+                  <Sparkles size={14} className="inline-icon" aria-hidden="true" /> Ask AI About This Event
                 </Link>
                 <p className="cta-notice" style={{ marginTop: '0.35rem', fontSize: '0.78rem' }}>
                   Get answers on rules, eligibility &amp; FAQs grounded in event documents.

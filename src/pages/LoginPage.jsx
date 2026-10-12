@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -205,9 +206,11 @@ export default function LoginPage() {
               }`}
               role="alert"
             >
-              <span className="alert-icon" aria-hidden="true">
-                {submittedStatus.type === 'success' ? '✓' : '⚠'}
-              </span>
+              {submittedStatus.type === 'success' ? (
+                <CheckCircle2 size={16} className="inline-icon" aria-hidden="true" />
+              ) : (
+                <AlertCircle size={16} className="inline-icon" aria-hidden="true" />
+              )}
               <span>{submittedStatus.message}</span>
             </div>
           )}

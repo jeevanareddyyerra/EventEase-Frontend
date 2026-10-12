@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { CalendarDays, LogOut } from 'lucide-react'
 import { useAuth } from '../context'
 import { formatFriendlyRole } from '../utils/formatters'
 
@@ -19,7 +20,9 @@ export default function Header() {
     <header className="site-header">
       <Link to={isAuthenticated ? '/home' : '/'} className="header-brand-link">
         <div className="header-brand">
-          <span className="brand-logo" aria-hidden="true">🎪</span>
+          <span className="brand-logo" aria-hidden="true">
+            <CalendarDays size={20} className="brand-icon-svg" />
+          </span>
           <div className="brand-titles">
             <span className="brand-name">EventEase</span>
             <span className="brand-tagline">Event &amp; Volunteer Coordination</span>
@@ -87,6 +90,7 @@ export default function Header() {
               onClick={handleLogout}
               aria-label="Log Out"
             >
+              <LogOut size={14} className="inline-icon" />
               Log Out
             </button>
           </>

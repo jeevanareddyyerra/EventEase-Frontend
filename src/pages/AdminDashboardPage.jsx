@@ -1,5 +1,23 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  RotateCw,
+  CheckCircle2,
+  AlertCircle,
+  UsersRound,
+  CalendarDays,
+  Ticket,
+  ShieldCheck,
+  Building2,
+  UserRound,
+  ClipboardList,
+  Check,
+  X,
+  Clock3,
+  MapPin,
+  Phone,
+  PartyPopper,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context'
@@ -472,7 +490,7 @@ export default function AdminDashboardPage() {
               onClick={handleRefreshAll}
               title="Refresh platform data"
             >
-              🔄 Refresh Platform
+              <RotateCw size={14} className="inline-icon" aria-hidden="true" /> Refresh Platform
             </button>
             <Link to="/events" className="btn btn-secondary btn-large">
               Public Events
@@ -488,7 +506,7 @@ export default function AdminDashboardPage() {
             style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="alert-icon" aria-hidden="true">✓</span>
+              <CheckCircle2 size={16} className="inline-icon" aria-hidden="true" />
               <span>{actionSuccess}</span>
             </div>
             <button
@@ -509,7 +527,7 @@ export default function AdminDashboardPage() {
             style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="alert-icon" aria-hidden="true">⚠</span>
+              <AlertCircle size={16} className="inline-icon" aria-hidden="true" />
               <span>{actionError}</span>
             </div>
             <button
@@ -547,7 +565,9 @@ export default function AdminDashboardPage() {
               <div className="admin-metric-card">
                 <div className="admin-metric-header">
                   <span className="admin-metric-title">Platform Users</span>
-                  <span className="badge badge-secondary">👥 Accounts</span>
+                  <span className="badge badge-secondary">
+                    <UsersRound size={12} className="inline-icon" aria-hidden="true" /> Accounts
+                  </span>
                 </div>
                 <div className="admin-metric-value">{summary.totalUsers}</div>
                 <div className="admin-metric-breakdown">
@@ -567,7 +587,9 @@ export default function AdminDashboardPage() {
               <div className="admin-metric-card">
                 <div className="admin-metric-header">
                   <span className="admin-metric-title">Platform Events</span>
-                  <span className="badge badge-accent">🎪 Catalog</span>
+                  <span className="badge badge-accent">
+                    <CalendarDays size={12} className="inline-icon" aria-hidden="true" /> Catalog
+                  </span>
                 </div>
                 <div className="admin-metric-value">{summary.totalEvents}</div>
                 <div className="admin-metric-breakdown">
@@ -617,7 +639,9 @@ export default function AdminDashboardPage() {
               <div className="admin-metric-card">
                 <div className="admin-metric-header">
                   <span className="admin-metric-title">Total Registrations</span>
-                  <span className="badge badge-success">🎫 Activity</span>
+                  <span className="badge badge-success">
+                    <Ticket size={12} className="inline-icon" aria-hidden="true" /> Activity
+                  </span>
                 </div>
                 <div className="admin-metric-value" style={{ color: '#10b981' }}>
                   {summary.totalRegistrations}
@@ -639,7 +663,9 @@ export default function AdminDashboardPage() {
             className={`admin-tab-btn ${activeTab === 'PENDING_EVENTS' ? 'admin-tab-btn-active' : ''}`}
             onClick={() => setActiveTab('PENDING_EVENTS')}
           >
-            <span>⏳ Event Approval Queue</span>
+            <span>
+              <ShieldCheck size={14} className="inline-icon" aria-hidden="true" /> Event Approval Queue
+            </span>
             <span
               className={`badge ${pendingEvents.length > 0 ? 'badge-warning' : 'badge-secondary'}`}
               style={{ fontSize: '0.75rem', padding: '0.1rem 0.45rem' }}
@@ -653,7 +679,9 @@ export default function AdminDashboardPage() {
             className={`admin-tab-btn ${activeTab === 'ORGANIZER_REQUESTS' ? 'admin-tab-btn-active' : ''}`}
             onClick={() => setActiveTab('ORGANIZER_REQUESTS')}
           >
-            <span>🏢 Organizer Applications</span>
+            <span>
+              <Building2 size={14} className="inline-icon" aria-hidden="true" /> Organizer Applications
+            </span>
             <span
               className={`badge ${pendingOrganizerCount > 0 ? 'badge-warning' : 'badge-secondary'}`}
               style={{ fontSize: '0.75rem', padding: '0.1rem 0.45rem' }}
@@ -667,7 +695,9 @@ export default function AdminDashboardPage() {
             className={`admin-tab-btn ${activeTab === 'USERS' ? 'admin-tab-btn-active' : ''}`}
             onClick={() => setActiveTab('USERS')}
           >
-            <span>👤 User &amp; Organizer Directory</span>
+            <span>
+              <UserRound size={14} className="inline-icon" aria-hidden="true" /> User &amp; Organizer Directory
+            </span>
             {users.length > 0 && (
               <span className="badge badge-secondary" style={{ fontSize: '0.75rem', padding: '0.1rem 0.45rem' }}>
                 {users.length}
@@ -680,7 +710,9 @@ export default function AdminDashboardPage() {
             className={`admin-tab-btn ${activeTab === 'ALL_EVENTS' ? 'admin-tab-btn-active' : ''}`}
             onClick={() => setActiveTab('ALL_EVENTS')}
           >
-            <span>📋 All Events Explorer</span>
+            <span>
+              <ClipboardList size={14} className="inline-icon" aria-hidden="true" /> All Events Explorer
+            </span>
             {allEvents.length > 0 && (
               <span className="badge badge-secondary" style={{ fontSize: '0.75rem', padding: '0.1rem 0.45rem' }}>
                 {allEvents.length}
@@ -712,7 +744,7 @@ export default function AdminDashboardPage() {
                   onClick={handleRefreshPending}
                   disabled={isLoadingPending}
                 >
-                  🔄 Refresh Queue
+                  <RotateCw size={14} className="inline-icon" aria-hidden="true" /> Refresh Queue
                 </button>
               </div>
             </div>
@@ -735,9 +767,7 @@ export default function AdminDashboardPage() {
               </div>
             ) : filteredPendingEvents.length === 0 ? (
               <div className="empty-state-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
-                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '0.75rem' }}>
-                  🎉
-                </span>
+                <PartyPopper size={44} className="empty-icon-svg" aria-hidden="true" style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--accent)' }} />
                 <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-h)' }}>
                   {pendingSearch ? 'No matching pending events' : 'Approval Queue is Clear!'}
                 </h3>
@@ -810,15 +840,20 @@ export default function AdminDashboardPage() {
                           </td>
                           <td>
                             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
-                              <span>📅 {formatDate(ev.date)}</span>
-                              <span style={{ color: 'var(--text)', fontSize: '0.78rem' }}>
-                                ⏰ {formatTimeRange(ev.startTime, ev.endTime)}
+                              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <CalendarDays size={12} className="inline-icon" aria-hidden="true" />
+                                {formatDate(ev.date)}
+                              </span>
+                              <span style={{ color: 'var(--text)', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center' }}>
+                                <Clock3 size={11} className="inline-icon" aria-hidden="true" />
+                                {formatTimeRange(ev.startTime, ev.endTime)}
                               </span>
                             </div>
                           </td>
                           <td>
-                            <span style={{ fontSize: '0.85rem' }}>
-                              📍 {ev.venue || 'TBA'}
+                            <span style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center' }}>
+                              <MapPin size={12} className="inline-icon" aria-hidden="true" />
+                              {ev.venue || 'TBA'}
                             </span>
                           </td>
                           <td>
@@ -840,7 +875,8 @@ export default function AdminDashboardPage() {
                                 onClick={() => setApproveModalEvent(ev)}
                                 title="Approve event proposal"
                               >
-                                ✓ Approve
+                                <Check size={13} className="inline-icon" aria-hidden="true" />
+                                Approve
                               </button>
                               <button
                                 type="button"
@@ -849,7 +885,8 @@ export default function AdminDashboardPage() {
                                 onClick={() => setRejectModalEvent(ev)}
                                 title="Reject event proposal"
                               >
-                                ✕ Reject
+                                <X size={13} className="inline-icon" aria-hidden="true" />
+                                Reject
                               </button>
                               <Link
                                 to={`/events/${ev.id}`}
@@ -911,7 +948,7 @@ export default function AdminDashboardPage() {
                   onClick={handleRefreshOrganizerRequests}
                   disabled={isLoadingOrganizerRequests}
                 >
-                  🔄 Refresh Requests
+                  <RotateCw size={14} className="inline-icon" aria-hidden="true" /> Refresh Requests
                 </button>
               </div>
             </div>
@@ -934,9 +971,7 @@ export default function AdminDashboardPage() {
               </div>
             ) : filteredOrganizerRequests.length === 0 ? (
               <div className="empty-state-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
-                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '0.75rem' }}>
-                  🏢
-                </span>
+                <Building2 size={44} className="empty-icon-svg" aria-hidden="true" style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--accent)' }} />
                 <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-h)' }}>
                   {organizerSearch
                     ? 'No matching organizer applications'
@@ -992,8 +1027,9 @@ export default function AdminDashboardPage() {
                             {applicant.email}
                           </span>
                           {applicant.phone && (
-                            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text)' }}>
-                              📞 {applicant.phone}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: '0.78rem', color: 'var(--text)' }}>
+                              <Phone size={11} className="inline-icon" aria-hidden="true" />
+                              {applicant.phone}
                             </span>
                           )}
                         </td>
@@ -1034,7 +1070,8 @@ export default function AdminDashboardPage() {
                                 disabled={processingOrganizerId === applicant.id}
                                 title="Approve as Event Organizer"
                               >
-                                ✓ Approve
+                                <Check size={13} className="inline-icon" aria-hidden="true" />
+                                Approve
                               </button>
                             )}
                             {applicant.organizerStatus !== 'REJECTED' && (
@@ -1046,7 +1083,8 @@ export default function AdminDashboardPage() {
                                 disabled={processingOrganizerId === applicant.id}
                                 title="Decline organizer application"
                               >
-                                ✕ Decline
+                                <X size={13} className="inline-icon" aria-hidden="true" />
+                                Decline
                               </button>
                             )}
                             {applicant.organizerStatus === 'APPROVED' && (
@@ -1105,7 +1143,7 @@ export default function AdminDashboardPage() {
                 onClick={handleRefreshUsers}
                 disabled={isLoadingUsers}
               >
-                🔄 Refresh Directory
+                <RotateCw size={14} className="inline-icon" aria-hidden="true" /> Refresh Directory
               </button>
             </div>
 
@@ -1127,9 +1165,7 @@ export default function AdminDashboardPage() {
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="empty-state-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
-                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '0.75rem' }}>
-                  👥
-                </span>
+                <UsersRound size={44} className="empty-icon-svg" aria-hidden="true" style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--accent)' }} />
                 <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-h)' }}>
                   No users match criteria
                 </h3>
@@ -1248,7 +1284,7 @@ export default function AdminDashboardPage() {
                 onClick={handleRefreshAllEvents}
                 disabled={isLoadingAllEvents}
               >
-                🔄 Refresh Events
+                <RotateCw size={14} className="inline-icon" aria-hidden="true" /> Refresh Events
               </button>
             </div>
 
@@ -1270,9 +1306,7 @@ export default function AdminDashboardPage() {
               </div>
             ) : filteredAllEvents.length === 0 ? (
               <div className="empty-state-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
-                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '0.75rem' }}>
-                  🎪
-                </span>
+                <CalendarDays size={44} className="empty-icon-svg" aria-hidden="true" style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--accent)' }} />
                 <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-h)' }}>
                   No events found
                 </h3>
@@ -1328,13 +1362,15 @@ export default function AdminDashboardPage() {
                           </span>
                         </td>
                         <td>
-                          <span style={{ fontSize: '0.85rem' }}>
-                            📅 {formatDate(ev.date)}
+                          <span style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center' }}>
+                            <CalendarDays size={12} className="inline-icon" aria-hidden="true" />
+                            {formatDate(ev.date)}
                           </span>
                         </td>
                         <td>
-                          <span style={{ fontSize: '0.85rem' }}>
-                            📍 {ev.venue || 'TBA'}
+                          <span style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center' }}>
+                            <MapPin size={12} className="inline-icon" aria-hidden="true" />
+                            {ev.venue || 'TBA'}
                           </span>
                         </td>
                         <td style={{ textAlign: 'right' }}>
@@ -1368,8 +1404,9 @@ export default function AdminDashboardPage() {
                   type="button"
                   className="btn btn-secondary btn-small"
                   onClick={() => setApproveModalEvent(null)}
+                  aria-label="Close dialog"
                 >
-                  ✕
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
               <div>
@@ -1426,8 +1463,9 @@ export default function AdminDashboardPage() {
                   type="button"
                   className="btn btn-secondary btn-small"
                   onClick={() => setRejectModalEvent(null)}
+                  aria-label="Close dialog"
                 >
-                  ✕
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
               <div>
@@ -1441,8 +1479,9 @@ export default function AdminDashboardPage() {
                     Organizer: {rejectModalEvent.organizerName || `Org #${rejectModalEvent.organizerId}`}
                   </span>
                 </div>
-                <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#ef4444' }}>
-                  ⚠️ This will transition the event status to <strong>CANCELLED</strong>. The event will not be published.
+                <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <AlertCircle size={15} className="inline-icon" aria-hidden="true" />
+                  <span>This will transition the event status to <strong>CANCELLED</strong>. The event will not be published.</span>
                 </p>
               </div>
               <div className="admin-modal-actions">
@@ -1479,8 +1518,9 @@ export default function AdminDashboardPage() {
                   type="button"
                   className="btn btn-secondary btn-small"
                   onClick={() => setDeleteModalUser(null)}
+                  aria-label="Close dialog"
                 >
-                  ✕
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
               <div>
@@ -1494,8 +1534,9 @@ export default function AdminDashboardPage() {
                     Role: {formatFriendlyRole(deleteModalUser.role)} &bull; ID: #{deleteModalUser.id}
                   </span>
                 </div>
-                <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#ef4444' }}>
-                  ⚠️ Warning: This action cannot be reversed. If this user has active registrations or organized events, deletion will fail due to referential integrity constraints.
+                <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <AlertCircle size={15} className="inline-icon" aria-hidden="true" />
+                  <span><strong>Warning:</strong> This action cannot be reversed. If this user has active registrations or organized events, deletion will fail due to referential integrity constraints.</span>
                 </p>
               </div>
               <div className="admin-modal-actions">
@@ -1532,8 +1573,9 @@ export default function AdminDashboardPage() {
                   type="button"
                   className="btn btn-secondary btn-small"
                   onClick={() => setApproveModalOrganizer(null)}
+                  aria-label="Close dialog"
                 >
-                  ✕
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
               <div>
@@ -1585,8 +1627,9 @@ export default function AdminDashboardPage() {
                   type="button"
                   className="btn btn-secondary btn-small"
                   onClick={() => setRejectModalOrganizer(null)}
+                  aria-label="Close dialog"
                 >
-                  ✕
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
               <div>

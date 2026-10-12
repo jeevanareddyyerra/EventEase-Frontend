@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  CalendarDays,
+  MapPin,
+  UsersRound,
+  UserRound,
+  AlertCircle,
+  Sparkles,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { getAllEvents } from '../api'
@@ -206,7 +214,7 @@ export default function EventsPage() {
 
           <div className="events-header-meta">
             <Link to="/assistant" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span aria-hidden="true">✨</span> Ask AI Assistant
+              <Sparkles size={14} className="inline-icon" aria-hidden="true" /> Ask AI Assistant
             </Link>
             <span className="badge badge-accent">
               {totalElements} {hasActiveFilters ? 'Matching Events' : 'Total Events'}
@@ -345,7 +353,9 @@ export default function EventsPage() {
         {/* Error State */}
         {!isLoading && errorMessage && (
           <div className="auth-alert alert-error" role="alert">
-            <span className="alert-icon" aria-hidden="true">⚠</span>
+            <span className="alert-icon" aria-hidden="true">
+              <AlertCircle size={16} />
+            </span>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontWeight: 600 }}>Error loading events</p>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{errorMessage}</p>
@@ -364,7 +374,7 @@ export default function EventsPage() {
         {/* Empty State */}
         {!isLoading && !errorMessage && events.length === 0 && (
           <div className="connection-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-            <span style={{ fontSize: '2.5rem' }} aria-hidden="true">🎪</span>
+            <CalendarDays size={36} className="empty-icon-svg" aria-hidden="true" />
             <h3 style={{ margin: '0.75rem 0 0.25rem' }}>No Events Found</h3>
             <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '480px' }}>
               {hasActiveFilters
@@ -402,8 +412,8 @@ export default function EventsPage() {
                 <article key={event.id} className="preview-card event-card">
                   {event.imageUrl && (
                     <div
-                      className="event-card-poster-wrapper"
-                      style={{
+                       className="event-card-poster-wrapper"
+                       style={{
                         width: '100%',
                         height: '180px',
                         overflow: 'hidden',
@@ -447,7 +457,9 @@ export default function EventsPage() {
 
                     <div className="event-metadata-list">
                       <div className="event-meta-row">
-                        <span className="event-meta-icon" aria-hidden="true">📅</span>
+                        <span className="event-meta-icon" aria-hidden="true">
+                          <CalendarDays size={14} className="inline-icon" />
+                        </span>
                         <span>{formatDate(event.date)}</span>
                         {(event.startTime || event.endTime) && (
                           <span className="event-meta-time">
@@ -457,12 +469,16 @@ export default function EventsPage() {
                       </div>
 
                       <div className="event-meta-row">
-                        <span className="event-meta-icon" aria-hidden="true">📍</span>
+                        <span className="event-meta-icon" aria-hidden="true">
+                          <MapPin size={14} className="inline-icon" />
+                        </span>
                         <span>{event.venue || 'Venue to be announced'}</span>
                       </div>
 
                       <div className="event-meta-row">
-                        <span className="event-meta-icon" aria-hidden="true">👥</span>
+                        <span className="event-meta-icon" aria-hidden="true">
+                          <UsersRound size={14} className="inline-icon" />
+                        </span>
                         <span>
                           {event.capacity != null ? `${event.capacity} Max Capacity` : 'Open Capacity'}
                         </span>
@@ -470,7 +486,9 @@ export default function EventsPage() {
 
                       {event.organizerName && (
                         <div className="event-meta-row">
-                          <span className="event-meta-icon" aria-hidden="true">👤</span>
+                          <span className="event-meta-icon" aria-hidden="true">
+                            <UserRound size={14} className="inline-icon" />
+                          </span>
                           <span>Organized by {event.organizerName}</span>
                         </div>
                       )}

@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import {
+  CalendarDays,
+  Zap,
+  Bot,
+  Award,
+  AlertCircle,
+  CheckCircle2,
+  MapPin,
+  UsersRound,
+  Search,
+  Ticket,
+  FileText,
+  ShieldCheck,
+} from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { getAllEvents } from '../api'
@@ -96,7 +110,7 @@ export default function LandingPage() {
             role="alert"
           >
             <span className="alert-icon" aria-hidden="true">
-              {location.state?.unauthorized ? '⚠' : '✓'}
+              {location.state?.unauthorized ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
             </span>
             <span>{flashMessage}</span>
           </div>
@@ -105,16 +119,12 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-badge">
-            <span className="badge badge-accent">Enterprise &amp; Campus Event Management</span>
+            <span className="badge badge-accent">Enterprise &amp; Campus Event Platform</span>
           </div>
-          <h1 className="hero-title">Discover Events. Create Experiences.</h1>
-          <p className="hero-subtitle">
-            Smart Campus &amp; Corporate Event Management Platform
-          </p>
+          <h1 className="hero-title">Discover Events. Seamless Experiences.</h1>
           <p className="hero-description">
-            EventEase simplifies event planning, registration workflows, volunteer
-            coordination, and attendance tracking. Experience seamless event operations
-            with role-based access for organizers, participants, and administrators.
+            Plan, register, and coordinate campus and corporate events with automated registration,
+            volunteer management, and verifiable completion certificates.
           </p>
           <div className="hero-actions">
             {isAuthenticated ? (
@@ -143,15 +153,21 @@ export default function LandingPage() {
 
           <div className="hero-highlights">
             <div className="hero-highlight-item">
-              <span className="highlight-icon" aria-hidden="true">⚡</span>
+              <span className="highlight-icon" aria-hidden="true">
+                <Zap size={16} />
+              </span>
               <span>Instant Registration</span>
             </div>
             <div className="hero-highlight-item">
-              <span className="highlight-icon" aria-hidden="true">🤖</span>
+              <span className="highlight-icon" aria-hidden="true">
+                <Bot size={16} />
+              </span>
               <span>Grounded AI Assistant</span>
             </div>
             <div className="hero-highlight-item">
-              <span className="highlight-icon" aria-hidden="true">📜</span>
+              <span className="highlight-icon" aria-hidden="true">
+                <Award size={16} />
+              </span>
               <span>Digital Certificates</span>
             </div>
           </div>
@@ -175,7 +191,9 @@ export default function LandingPage() {
 
           {!isLoadingEvents && isUnauthorized && (
             <div className="featured-auth-cta">
-              <div className="featured-auth-icon" aria-hidden="true">🎪</div>
+              <div className="featured-auth-icon" aria-hidden="true">
+                <CalendarDays size={28} className="featured-auth-icon-svg" />
+              </div>
               <div className="featured-auth-content">
                 <h3 className="featured-auth-title">Explore Live Campus &amp; Corporate Events</h3>
                 <p className="featured-auth-desc">
@@ -196,7 +214,9 @@ export default function LandingPage() {
 
           {!isLoadingEvents && !isUnauthorized && eventsError && (
             <div className="auth-alert alert-error" role="alert">
-              <span className="alert-icon" aria-hidden="true">⚠</span>
+              <span className="alert-icon" aria-hidden="true">
+                <AlertCircle size={16} />
+              </span>
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontWeight: 600 }}>Error loading events</p>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{eventsError}</p>
@@ -214,7 +234,7 @@ export default function LandingPage() {
 
           {!isLoadingEvents && !isUnauthorized && !eventsError && events.length === 0 && (
             <div className="empty-events-card">
-              <span style={{ fontSize: '2.5rem' }} aria-hidden="true">📅</span>
+              <CalendarDays size={36} className="empty-icon-svg" aria-hidden="true" />
               <h3 style={{ margin: '0.75rem 0 0.25rem' }}>No Upcoming Events Right Now</h3>
               <p className="hero-description" style={{ margin: '0 auto 1.5rem', maxWidth: '480px' }}>
                 There are currently no published events in the catalog. Check back soon for new schedules or browse our full events page.
@@ -250,13 +270,15 @@ export default function LandingPage() {
                         {event.description
                           ? event.description.length > 120
                             ? `${event.description.substring(0, 120)}...`
-                            : event.description
+                          : event.description
                           : 'No description provided.'}
                       </p>
 
                       <div className="event-metadata-list">
                         <div className="event-meta-row">
-                          <span className="event-meta-icon" aria-hidden="true">📅</span>
+                          <span className="event-meta-icon" aria-hidden="true">
+                            <CalendarDays size={14} className="inline-icon" />
+                          </span>
                           <span>{formatDate(event.date)}</span>
                           {(event.startTime || event.endTime) && (
                             <span className="event-meta-time">
@@ -266,12 +288,16 @@ export default function LandingPage() {
                         </div>
 
                         <div className="event-meta-row">
-                          <span className="event-meta-icon" aria-hidden="true">📍</span>
+                          <span className="event-meta-icon" aria-hidden="true">
+                            <MapPin size={14} className="inline-icon" />
+                          </span>
                           <span>{event.venue || 'Venue to be announced'}</span>
                         </div>
 
                         <div className="event-meta-row">
-                          <span className="event-meta-icon" aria-hidden="true">👥</span>
+                          <span className="event-meta-icon" aria-hidden="true">
+                            <UsersRound size={14} className="inline-icon" />
+                          </span>
                           <span>
                             {event.capacity != null ? `${event.capacity} Max Capacity` : 'Open Capacity'}
                           </span>
@@ -312,7 +338,9 @@ export default function LandingPage() {
           <div className="cards-grid">
             <div className="step-card status-card">
               <div className="step-number">01</div>
-              <div className="step-icon" aria-hidden="true">🔍</div>
+              <div className="step-icon" aria-hidden="true">
+                <Search size={22} className="step-icon-svg" />
+              </div>
               <h3 className="step-title">Discover</h3>
               <p className="step-desc">
                 Browse diverse events, from technical hackathons and academic workshops to cultural
@@ -322,7 +350,9 @@ export default function LandingPage() {
 
             <div className="step-card status-card">
               <div className="step-number">02</div>
-              <div className="step-icon" aria-hidden="true">🎟️</div>
+              <div className="step-icon" aria-hidden="true">
+                <Ticket size={22} className="step-icon-svg" />
+              </div>
               <h3 className="step-title">Register</h3>
               <p className="step-desc">
                 Secure your spot in seconds with one-click registration, instant ticket confirmation,
@@ -332,7 +362,9 @@ export default function LandingPage() {
 
             <div className="step-card status-card">
               <div className="step-number">03</div>
-              <div className="step-icon" aria-hidden="true">🎓</div>
+              <div className="step-icon" aria-hidden="true">
+                <Award size={22} className="step-icon-svg" />
+              </div>
               <h3 className="step-title">Participate</h3>
               <p className="step-desc">
                 Check in seamlessly on event day, ask questions with the AI Assistant, and earn
@@ -356,7 +388,9 @@ export default function LandingPage() {
 
             <div className="ai-features-grid">
               <div className="ai-feature-pill">
-                <span className="ai-feature-icon" aria-hidden="true">💡</span>
+                <span className="ai-feature-icon" aria-hidden="true">
+                  <FileText size={18} className="ai-feature-icon-svg" />
+                </span>
                 <div>
                   <strong>Contextual Document Search</strong>
                   <p>Smart search understands your questions and finds relevant details across event guides.</p>
@@ -364,7 +398,9 @@ export default function LandingPage() {
               </div>
 
               <div className="ai-feature-pill">
-                <span className="ai-feature-icon" aria-hidden="true">📌</span>
+                <span className="ai-feature-icon" aria-hidden="true">
+                  <CheckCircle2 size={18} className="ai-feature-icon-svg" />
+                </span>
                 <div>
                   <strong>Direct Evidence Citations</strong>
                   <p>Every answer includes verifiable citations linking to specific official documents and agendas.</p>
@@ -372,7 +408,9 @@ export default function LandingPage() {
               </div>
 
               <div className="ai-feature-pill">
-                <span className="ai-feature-icon" aria-hidden="true">🛡️</span>
+                <span className="ai-feature-icon" aria-hidden="true">
+                  <ShieldCheck size={18} className="ai-feature-icon-svg" />
+                </span>
                 <div>
                   <strong>Verified Accuracy</strong>
                   <p>Answers are grounded exclusively in official event materials so you receive dependable information.</p>

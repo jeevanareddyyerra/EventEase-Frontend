@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { CalendarDays } from 'lucide-react'
 import { useAuth } from '../context'
 
 const CURRENT_YEAR = new Date().getFullYear()
@@ -13,11 +14,13 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="footer-col footer-col-brand">
             <div className="footer-brand">
-              <span className="brand-logo" aria-hidden="true">🎪</span>
+              <span className="brand-logo" aria-hidden="true">
+                <CalendarDays size={20} className="brand-icon-svg" />
+              </span>
               <span className="brand-name">EventEase</span>
             </div>
             <p className="footer-tagline">
-              Modern campus and corporate event management platform. Discover upcoming events,
+              Campus and corporate event management platform. Discover upcoming events,
               streamline registrations, empower organizers, and celebrate experiences.
             </p>
           </div>
